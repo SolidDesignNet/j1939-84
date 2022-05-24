@@ -176,9 +176,10 @@ public class Part01Step12Controller extends StepController {
         }
 
         // 6.1.12.3 Actions2: // 6.1.12.3 was omitted in error.
-        // a. DS DM7 with TID 245 (for DM58) using FMI 31 for each SP identified as supporting DM58 in a DM24 response
+        // 6.1.12.3.a - DS DM7 with TID 245 (for DM58) using FMI 31 for each SP identified as supporting DM58 in a DM24
+        // response
         // In step 6.1.4.1 to the SP’s respective OBD ECU.
-        // Display the scaled engineering value for the requested SP.
+        // 6.1.12.3.b - Display the scaled engineering value for the requested SP.
         getDataRepository().getObdModules().forEach(module -> {
             module.getSupportedSPNs()
                   .stream()
