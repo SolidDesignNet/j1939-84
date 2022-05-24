@@ -232,6 +232,7 @@ public class Part01Step12Controller extends StepController {
                                                                 });
                   });
         });
+        // 6.1.12.5 - 6.1.12.6
         getDm58AndVerifyData();
     }
 
