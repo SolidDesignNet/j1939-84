@@ -143,6 +143,7 @@ public class Part01Step26ControllerTest extends AbstractControllerTest {
 
         instance = new Part01Step26Controller(executor,
                                               bannerModule,
+                                              DateTimeModule.getInstance(),
                                               dataRepository,
                                               engineSpeedModule,
                                               vehicleInformationModule,
