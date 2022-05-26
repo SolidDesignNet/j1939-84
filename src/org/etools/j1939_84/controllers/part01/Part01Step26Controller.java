@@ -631,13 +631,13 @@ public class Part01Step26Controller extends StepController {
             if (ghgTrackingpacketForPg == null) {
                 // 6.1.26.14.a. For all MY2024+ engines, Fail each PG query where no response was received.
                 if (getEngineModelYear() >= 2024) {
-                    addFailure("6.1.26.10.a - No response was received from "
+                    addFailure("6.1.26.14.a - No response was received from "
                             + module.getModuleName() + " for PG "
                             + pg);
                 }
                 // 6.1.26.14.b. For MY2022-23 engines, Warn each PG query, where no response was received
                 if (getEngineModelYear() >= 2022 && getEngineModelYear() <= 2023) {
-                    addWarning("6.1.26.10.b - No response was received from "
+                    addWarning("6.1.26.14.b - No response was received from "
                             + module.getModuleName() + " for PG "
                             + pg);
                 }
