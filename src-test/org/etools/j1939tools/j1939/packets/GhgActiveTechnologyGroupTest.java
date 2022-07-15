@@ -7,6 +7,11 @@ package org.etools.j1939tools.j1939.packets;
 import static org.etools.j1939_84.J1939_84.NL;
 import static org.junit.Assert.*;
 
+import java.util.List;
+import org.etools.j1939tools.j1939.J1939DaRepository;
+import org.etools.j1939tools.j1939.model.Spn;
+import org.etools.j1939tools.j1939.model.SpnDataParser;
+import org.etools.j1939tools.j1939.model.SpnDefinition;
 import org.etools.j1939tools.modules.DateTimeModule;
 import org.etools.j1939tools.modules.TestDateTimeModule;
 import org.junit.After;
@@ -18,10 +23,17 @@ public class GhgActiveTechnologyGroupTest {
     private GhgActiveTechnologyGroup instance1;
     private GhgActiveTechnologyGroup instance2;
 
+    private char groupLetter;
+
     @Before
     public void setUp() {
-        instance1 = new GhgActiveTechnologyGroup("Some Label", 0xFA, 0x88);
-        instance2 = new GhgActiveTechnologyGroup("Some Other Label", 0xFF, 0xFF);
+        Slot slot = J1939DaRepository.findSlot(64255, 12697);
+        var pgnDefinition = J1939DaRepository.getInstance().findPgnDefinition(64255);
+        byte[] data = {0x06, 0x7D, 0x60, 0x10, 0x00, (byte)0xC0, (byte)0xBC, 0x05, 0x00};
+        var spn = SupportedSPN.parseSPN(data);;
+        SpnDataParser.parse(data)
+        instance1 = new GhgActiveTechnologyGroup(0xAD, 0xFA, 0x88);
+        instance2 = new GhgActiveTechnologyGroup(0xF0, 0xFF, 0xFF);
         DateTimeModule.setInstance(new TestDateTimeModule());
     }
 
@@ -32,35 +44,35 @@ public class GhgActiveTechnologyGroupTest {
 
     @Test
     public void getTechIndex() {
-        assertEquals("Some Label", instance1.getTechIndex());
+        assertEquals(55, instance1.getIndex());
     }
 
     @Test
     public void setTechIndex() {
-        instance1.setTechIndex("Good times");
-        assertEquals("Good times", instance1.getTechIndex());
+        instance1.setIndex(0x98);
+        assertEquals(20, instance1.getIndex());
     }
 
     @Test
     public void getTechTime() {
-        assertEquals(255, instance2.getTechTime());
+        assertEquals(255, instance2.getTime());
     }
 
     @Test
     public void setTechTime() {
-        instance2.setTechTime(0x0D);
-        assertEquals(13, instance2.getTechTime());
+        instance2.setTime(0x0D);
+        assertEquals(13, instance2.getTime());
     }
 
     @Test
     public void getTechVehDistance() {
-        assertEquals(136, instance1.getTechVehDistance());
+        assertEquals(136, instance1.getVehDistance());
     }
 
     @Test
     public void setTechVehDistance() {
-        instance1.setTechVehDistance(0xAD);
-        assertEquals(173, instance1.getTechVehDistance());
+        instance1.setVehDistance(0xAD);
+        assertEquals(173, instance1.getVehDistance());
     }
 
     @Test
