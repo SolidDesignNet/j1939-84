@@ -146,10 +146,10 @@ public class Part01Step07Controller extends StepController {
                 if (calId != null && calId.length > 0 && StringUtils.containsNonPrintableAsciiCharacter(calId)) {
                     String moduleName = packet.getModuleName();
                     if (isObdModule) {
-                        addFailure("6.1.7.2.b.ii - " + moduleName
+                        addFailure("6.1.7.2.b.ii - OBD ECU " + moduleName
                                 + " CAL ID not formatted correctly (contains non-printable ASCII)");
                     } else {
-                        addWarning("6.1.7.3.d.iii - " + moduleName
+                        addWarning("6.1.7.3.d.iii - Non-OBD ECU " + moduleName
                                 + " CAL ID not formatted correctly (contains non-printable ASCII)");
                     }
                 }
@@ -158,10 +158,10 @@ public class Part01Step07Controller extends StepController {
                 if (rawCalId != null && rawCalId.length > 0 && rawCalId[0] == (byte) 0x00) {
                     String moduleName = packet.getModuleName();
                     if (isObdModule(packet.getSourceAddress())) {
-                        addFailure("6.1.7.2.b.ii - " + moduleName
+                        addFailure("6.1.7.2.b.ii - OBD ECU " + moduleName
                                 + " CAL ID not formatted correctly (padded incorrectly)");
                     } else {
-                        addWarning("6.1.7.3.d.iii - " + moduleName
+                        addWarning("6.1.7.3.d.iii - Non-OBD ECU " + moduleName
                                 + " CAL ID not formatted correctly (padded incorrectly)");
                     }
                 }
@@ -184,9 +184,9 @@ public class Part01Step07Controller extends StepController {
                 if (allFF) {
                     String moduleName = packet.getModuleName();
                     if (isObdModule(packet.getSourceAddress())) {
-                        addFailure("6.1.7.2.b.iii - Received CAL ID is all 0xFF from " + moduleName);
+                        addFailure("6.1.7.2.b.iii - OBD ECU Received CAL ID is all 0xFF from " + moduleName);
                     } else {
-                        addWarning("6.1.7.3.d.iv - Received CAL ID is all 0xFF from " + moduleName);
+                        addWarning("6.1.7.3.d.iv - Non-OBD ECU Received CAL ID is all 0xFF from " + moduleName);
                     }
                 }
             }
@@ -205,9 +205,9 @@ public class Part01Step07Controller extends StepController {
                 if (allZeros) {
                     String moduleName = packet.getModuleName();
                     if (isObdModule(packet.getSourceAddress())) {
-                        addFailure("6.1.7.2.b.iv - Received CVN is all 0x00 from " + moduleName);
+                        addFailure("6.1.7.2.b.iv - OBD ECU Received CVN is all 0x00 from " + moduleName);
                     } else {
-                        addFailure("6.1.7.3.d.v Received CVN that is all 0x00 from " + moduleName);
+                        addFailure("6.1.7.3.d.v Non-OBD ECU Received CVN that is all 0x00 from " + moduleName);
                     }
                 }
             }

@@ -618,8 +618,8 @@ public class Part01Step07ControllerTest extends AbstractControllerTest {
                                         eq("6.1.7.3.c.i - Non-OBD ECU Brakes - Drive Axle #2 (14) provided CAL ID"));
         verify(mockListener).addOutcome(eq(PART_NUMBER),
                                         eq(STEP_NUMBER),
-                                        eq(FAIL),
-                                        eq("6.1.7.3.c.ii - Brakes - Drive Axle #2 (14) <> 1 CVN for every CAL ID"));
+                                        eq(WARN),
+                                        eq("6.1.7.3.d.ii - Brakes - Drive Axle #2 (14) <> 1 CVN for every CAL ID"));
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
