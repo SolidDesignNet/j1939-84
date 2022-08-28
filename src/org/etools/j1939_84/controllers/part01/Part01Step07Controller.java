@@ -128,9 +128,9 @@ public class Part01Step07Controller extends StepController {
                      })
                      .forEach(p -> {
                          if (isObdModule(p.getSourceAddress())) {
-                             addFailure("6.1.7.2.b.i - " + p.getModuleName() + " <> 1 CVN for every CAL ID");
+                             addFailure("6.1.7.2.b.i - OBD ECU " + p.getModuleName() + " <> 1 CVN for every CAL ID");
                          } else {
-                             addWarning("6.1.7.3.d.ii - " + p.getModuleName() + " <> 1 CVN for every CAL ID");
+                             addWarning("6.1.7.3.d.ii - Non-OBD ECU " + p.getModuleName() + " <> 1 CVN for every CAL ID");
                          }
                      });
 
@@ -207,7 +207,7 @@ public class Part01Step07Controller extends StepController {
                     if (isObdModule(packet.getSourceAddress())) {
                         addFailure("6.1.7.2.b.iv - OBD ECU Received CVN is all 0x00 from " + moduleName);
                     } else {
-                        addFailure("6.1.7.3.d.v Non-OBD ECU Received CVN that is all 0x00 from " + moduleName);
+                        addWarning("6.1.7.3.d.v Non-OBD ECU Received CVN that is all 0x00 from " + moduleName);
                     }
                 }
             }
