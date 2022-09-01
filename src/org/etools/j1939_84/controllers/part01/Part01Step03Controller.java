@@ -138,14 +138,9 @@ public class Part01Step03Controller extends StepController {
 
         // 6.1.3.3.b Warn if any response received from a non-OBD ECU provides OBD Compliance values of 0, FBh, FCh,
         // FDh, FEh, or FFh.
-        Collection<Byte> invalidNonObdCompliance = List.of((byte) 0,
-                                                           (byte) 0xFB,
-                                                           (byte) 0xFC,
-                                                           (byte) 0xFD,
-                                                           (byte) 0xFE,
-                                                           (byte) 0xFF);
+        Collection<Integer> invalidNonObdCompliance = List.of(0, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF);
         parsedPackets.stream().forEach(p -> {
-            if (!p.isObd() && invalidNonObdCompliance.contains(p.getOBDCompliance())) {
+            if (!p.isObd() && invalidNonObdCompliance.contains((int) p.getOBDCompliance())) {
                 addWarning(String.format("6.1.3.3.b - Response received from a non-OBD ECU provided OBD Compliance values of %Xh",
                                          p.getOBDCompliance()));
             }
