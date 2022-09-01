@@ -102,7 +102,7 @@ public class Part01Step03Controller extends StepController {
         if (getFuelType() == FuelType.BATT_ELEC) {
             parsedPackets.stream().forEach(p -> {
                 if (p.getOBDCompliance() != 0x1B) {
-                    addFailure("6.1.3.2.c BEV vehicle reports ODB Compliance other than 1Bh (27).");
+                    addFailure("6.1.3.2.c - BEV vehicle reports ODB Compliance other than 1Bh (27)");
                 }
             });
         }
@@ -110,7 +110,7 @@ public class Part01Step03Controller extends StepController {
         // FDh, FEh, or FFh.
         parsedPackets.stream().forEach(p -> {
             if (getDataRepository().getFunctionZeroAddress() == p.getSourceAddress() && !p.isObd()) {
-                addFailure("6.1.3.2.d. Fail if any response from a function 0 device provides OBD Compliance values of 0, 5, FBh, FCh, FDh, FEh, or FFh.");
+                addFailure("6.1.3.2.d - Fail if any response from a function 0 device provides OBD Compliance values of 0, 5, FBh, FCh, FDh, FEh, or FFh");
             }
         });
 
@@ -118,7 +118,7 @@ public class Part01Step03Controller extends StepController {
         var usCarbCompliance = List.of(0x13, 0x14, 0x22, 0x23);
         if (getDataRepository().getVehicleInformation().isUsCarb()
                 && parsedPackets.stream().noneMatch(p -> usCarbCompliance.contains((int) p.getOBDCompliance()))) {
-            addFailure("6.1.3.2.e US/CARB vehicle does not provide OBD Compliance values of 13h, 14h, 22h, or 23h.");
+            addFailure("6.1.3.2.e - US/CARB vehicle does not provide OBD Compliance values of 13h, 14h, 22h, or 23h");
         }
 
         // 6.1.3.3.a. Warn if more than one ECU responds with a value for OBD compliance where the values are not
@@ -138,15 +138,26 @@ public class Part01Step03Controller extends StepController {
 
         // 6.1.3.3.b Warn if any response received from a non-OBD ECU provides OBD Compliance values of 0, FBh, FCh,
         // FDh, FEh, or FFh.
+        Collection<Byte> invalidNonObdCompliance = List.of((byte) 0,
+                                                           (byte) 0xFB,
+                                                           (byte) 0xFC,
+                                                           (byte) 0xFD,
+                                                           (byte) 0xFE,
+                                                           (byte) 0xFF);
         parsedPackets.stream().forEach(p -> {
-            if (!p.isObd() && p.getOBDCompliance() != 0x5) {
-                addWarning(String.format("6.1.3.3.b Response received from a non-OBD ECU %s provides OBD Compliance values of %Xh.",
-                                         p.getModuleName(),
+            if (!p.isObd() && invalidNonObdCompliance.contains(p.getOBDCompliance())) {
+                addWarning(String.format("6.1.3.3.b - Response received from a non-OBD ECU provided OBD Compliance values of %Xh",
                                          p.getOBDCompliance()));
             }
         });
 
-        // 6.1.3.3.a Info for DM5 replies from non-OBD ECUs.
+        // 6.1.3.3.c Info for DM5 replies from non-OBD ECUs.
+        parsedPackets.stream()
+                     .filter(p -> !p.isObd())
+                     .forEach(p -> {
+                         addInfo(String.format("6.1.3.3.c - Response received from a non-OBD ECU provided OBD Compliance values of %Xh",
+                                               p.getOBDCompliance()));
+                     });
     }
 
     private Integer getAddressClaimFunction(DM5DiagnosticReadinessPacket p) {

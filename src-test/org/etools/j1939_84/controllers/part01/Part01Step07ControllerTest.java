@@ -431,7 +431,7 @@ public class Part01Step07ControllerTest extends AbstractControllerTest {
         verify(mockListener).addOutcome(eq(PART_NUMBER),
                                         eq(STEP_NUMBER),
                                         eq(WARN),
-                                        eq("6.1.7.3.c CAL ID ÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ has 00h is in either the first or fourth bytes."));
+                                        eq("6.1.7.3.c - CAL ID ÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ has 00h is in either the first or fourth bytes"));
         verify(mockListener, times(4)).addOutcome(eq(PART_NUMBER),
                                                   eq(STEP_NUMBER),
                                                   eq(FAIL),
@@ -744,9 +744,7 @@ public class Part01Step07ControllerTest extends AbstractControllerTest {
         dataRepository.setVehicleInformation(vehicleInformation);
 
         when(communicationsModule.requestDM19(any(CommunicationsListener.class))).thenReturn(RequestResult.of());
-        when(communicationsModule.requestDM19(any(ResultsListener.class), eq(0x00)))
-                                                                                    .thenReturn(BusResult.of(
-                                                                                                             dm19));
+        when(communicationsModule.requestDM19(any(ResultsListener.class), eq(0x00))).thenReturn(BusResult.of(dm19));
 
         runTest();
 
@@ -1082,7 +1080,7 @@ public class Part01Step07ControllerTest extends AbstractControllerTest {
         verify(mockListener).addOutcome(eq(1),
                                         eq(7),
                                         eq(WARN),
-                                        eq("6.1.7.3.d.v Non-OBD ECU Received CVN that is all 0x00 from Electrical System (30)"));
+                                        eq("6.1.7.3.d.v - Non-OBD ECU Received CVN that is all 0x00 from Electrical System (30)"));
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
@@ -1173,7 +1171,7 @@ public class Part01Step07ControllerTest extends AbstractControllerTest {
         verify(mockListener).addOutcome(eq(1),
                                         eq(7),
                                         eq(WARN),
-                                        eq("6.1.7.3.c CAL ID QaD;QaD;QaD;QaD; has 00h is in either the first or fourth bytes."));
+                                        eq("6.1.7.3.c - CAL ID QaD;QaD;QaD;QaD; has 00h is in either the first or fourth bytes"));
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
     }
@@ -2001,7 +1999,7 @@ public class Part01Step07ControllerTest extends AbstractControllerTest {
         verify(mockListener).addOutcome(eq(1),
                                         eq(7),
                                         eq(WARN),
-                                        eq("6.1.7.3.c CAL ID     calids       has 00h is in either the first or fourth bytes."));
+                                        eq("6.1.7.3.c - CAL ID     calids       has 00h is in either the first or fourth bytes"));
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());

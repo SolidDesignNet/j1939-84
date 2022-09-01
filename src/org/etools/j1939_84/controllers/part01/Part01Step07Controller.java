@@ -101,7 +101,7 @@ public class Part01Step07Controller extends StepController {
                      .flatMap(p -> p.getCalibrationInformation().stream())
                      .filter(calInfo -> calInfo.getRawCvn()[0] == 0x00 || calInfo.getRawCvn()[3] == 0x0)
                      .forEach(caInfo -> {
-                         addWarning("6.1.7.3.c CAL ID " + caInfo.getCalibrationIdentification() + " has 00h is in either the first or fourth bytes.");
+                         addWarning("6.1.7.3.c - CAL ID " + caInfo.getCalibrationIdentification() + " has 00h is in either the first or fourth bytes");
                      });
 
         // 6.1.7.3.d.i. For responses from non-OBD ECUs: Warn if any non-OBD ECU provides CAL ID.
@@ -207,7 +207,7 @@ public class Part01Step07Controller extends StepController {
                     if (isObdModule(packet.getSourceAddress())) {
                         addFailure("6.1.7.2.b.iv - OBD ECU Received CVN is all 0x00 from " + moduleName);
                     } else {
-                        addWarning("6.1.7.3.d.v Non-OBD ECU Received CVN that is all 0x00 from " + moduleName);
+                        addWarning("6.1.7.3.d.v - Non-OBD ECU Received CVN that is all 0x00 from " + moduleName);
                     }
                 }
             }
