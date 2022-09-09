@@ -132,9 +132,6 @@ public class RP1210Bus implements Bus {
                                                       (short) (appPacketize ? 1 : 0));
         checkReturnCode(clientId);
         try {
-            sendCommand(CMD_PROTECT_J1939_ADDRESS,
-                        new byte[] { (byte) address, 0, 0, (byte) 0xE0, (byte) 0xFF, 0,
-                                (byte) 0x81, 0, 0, CLAIM_BLOCK_UNTIL_DONE });
             sendCommand(CMD_ECHO_TRANSMITTED_MESSAGES, ECHO_ON);
             sendCommand(CMD_SET_ALL_FILTERS_STATES_TO_PASS);
 

@@ -18,6 +18,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
@@ -359,8 +360,12 @@ public class UserInterfaceView implements UserInterfaceContract.View {
             adapterComboBox.addItemListener(e -> {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     getSpeedComboBox().removeAllItems();
-                    ((Adapter) e.getItem()).getConnectionStrings().forEach(s -> getSpeedComboBox().addItem(s));
-                    getSpeedComboBox().setSelectedItem("J1939:Baud=Auto");
+                    List<String> options = ((Adapter) e.getItem()).getConnectionStrings();
+                    options.forEach(s -> getSpeedComboBox().addItem(s));
+                    getSpeedComboBox().setSelectedItem(options.stream()
+                                                              .filter(s -> s.toLowerCase().contains("auto"))
+                                                              .findFirst()
+                                                              .orElse("J1939"));
                 }
             });
         }
