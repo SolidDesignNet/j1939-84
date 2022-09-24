@@ -58,7 +58,7 @@ public class MultiQueue<T> implements AutoCloseable {
             } catch (Throwable t) {
                 t.printStackTrace();
             }
-        }).start();
+        }, "MultiQueue Monitor").start();
     }
 
     synchronized public void add(T v) {
