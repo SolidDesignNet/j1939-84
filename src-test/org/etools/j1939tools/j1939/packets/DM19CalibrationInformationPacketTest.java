@@ -1244,13 +1244,18 @@ public class DM19CalibrationInformationPacketTest {
         assertEquals(54016, DM19CalibrationInformationPacket.PGN);
     }
 
+    /**
+     * real data test demonstrating missing DM19
+     * 
+     * @throws BusException
+     */
     @Test
     public void testRawTraffic() throws BusException {
         // preload db
         J1939DaRepository.getInstance().getPgnDefinitions();
         try (EchoBus bus = new EchoBus(0xF9);
              J1939TP tp = new J1939TP(bus, 0xF9)) {
-            var stream = new J1939(tp).processedStream(600, TimeUnit.MILLISECONDS);
+            var stream = new J1939(tp).processedStream(700, TimeUnit.MILLISECONDS);
             new Thread(() -> {
                 try {
                     double start = 64.711482;// 1 18EAFFF9x Tx d 3 00 D3 00
