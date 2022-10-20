@@ -104,7 +104,7 @@ public class DataRepository {
         this.part11StartTime = part11StartTime;
     }
 
-    public Collection<OBDModuleInformation> getOBDModules(Integer moduleAddress) {
+    private Collection<OBDModuleInformation> getOBDModules(Integer moduleAddress) {
         Collection<OBDModuleInformation> modules;
         if (moduleAddress == null) {
             modules = getObdModules();
