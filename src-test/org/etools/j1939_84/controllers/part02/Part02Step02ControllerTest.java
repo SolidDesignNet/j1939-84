@@ -297,10 +297,6 @@ public class Part02Step02ControllerTest extends AbstractControllerTest {
                                         eq("6.2.2.2.b - OBD ECU Body Controller (33) reported previously active DTC count not = 0"));
         verify(mockListener).addOutcome(PART_NUMBER,
                                         STEP_NUMBER,
-                                        WARN,
-                                        "6.2.2.2.c - Required monitor Exhaust Gas Sensor heater is supported by more than one OBD ECU");
-        verify(mockListener).addOutcome(PART_NUMBER,
-                                        STEP_NUMBER,
                                         FAIL,
                                         "6.2.2.4.a - Difference compared to data received during global request");
 
@@ -476,11 +472,6 @@ public class Part02Step02ControllerTest extends AbstractControllerTest {
                                         eq(2),
                                         eq(FAIL),
                                         eq("6.2.2.2.b - OBD ECU Body Controller (33) reported previously active DTC count not = 0"));
-        verify(mockListener).addOutcome(
-                                        PART_NUMBER,
-                                        STEP_NUMBER,
-                                        WARN,
-                                        "6.2.2.2.c - Required monitor Exhaust Gas Sensor heater is supported by more than one OBD ECU");
         verify(mockListener).addOutcome(PART_NUMBER,
                                         STEP_NUMBER,
                                         WARN,

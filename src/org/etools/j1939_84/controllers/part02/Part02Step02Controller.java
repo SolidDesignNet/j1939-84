@@ -110,10 +110,6 @@ public class Part02Step02Controller extends StepController {
                         .forEach(moduleName -> addFailure("6.2.2.2.b - OBD ECU " + moduleName
                                 + " reported previously active DTC count not = 0"));
 
-        // 6.2.2.2.c. Warn if any individual required monitor, except Continuous Component Monitoring (CCM) is supported
-        // by more than one OBD ECU.
-        reportDuplicateCompositeSystems(globalDM5Packets, "6.2.2.2.c");
-
         // 6.2.2.3.a. DS DM5 to each OBD ECU.
         List<DM5DiagnosticReadinessPacket> destinationSpecificPackets = new ArrayList<>();
         getDataRepository().getObdModuleAddresses()
