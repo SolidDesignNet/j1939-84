@@ -54,6 +54,8 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import net.sf.saxon.expr.parser.XPathParser.Accelerator;
+
 /**
  * Unit test for the {@link J1939} class
  *
@@ -579,6 +581,23 @@ public class J1939Test {
         var result = j1939.requestTestResults(247, 123, 31, 0, NOOP).getPacket();
         assertFalse(result.isPresent());
         assertEquals(TIMEOUT * 3, System.currentTimeMillis() - start, 40);
+    }
+
+    @Test(timeout = 4000)
+    public void testDM7NACK() throws BusException {
+        Bus bus = new EchoBus(0xF9);
+        J1939 j1939 = new J1939(bus);
+        Stream<Packet> stream = bus.read(200, TimeUnit.SECONDS);
+        new Thread(() -> {
+            try {
+                stream.findFirst();
+                bus.send(Packet.parsePacket("18E8F900 01 FF FF FF FF 00 E3 00"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+        var result = j1939.requestTestResults(247, 123, 31, 0, NOOP).getPacket();
+        assertEquals(AcknowledgmentPacket.Response.NACK, result.get().right.get().getResponse());
     }
 
     /**
