@@ -170,7 +170,69 @@ public class Part08Step10ControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testFailureForFreezeFrameWithoutDTC() {
+    public void testFailureForFreezeFrameWithoutDTC23() {
+        OBDModuleInformation obdModuleInformation = new OBDModuleInformation(0);
+        var dtc1 = DiagnosticTroubleCode.create(123, 4, 0, 1);
+        obdModuleInformation.set(DM12MILOnEmissionDTCPacket.create(0, ON, OFF, OFF, OFF, dtc1), 8);
+        var dtc2 = DiagnosticTroubleCode.create(456, 4, 0, 1);
+        obdModuleInformation.set(DM23PreviouslyMILOnEmissionDTCPacket.create(0, OFF, OFF, OFF, OFF, dtc2), 8);
+        dataRepository.putObdModule(obdModuleInformation);
+
+        var ff1 = new FreezeFrame(dtc1, new int[0]);
+        var ff2 = new FreezeFrame(dtc2, new int[0]);
+        var dtc3 = DiagnosticTroubleCode.create(987, 9, 0, 1);
+        var ff3 = new FreezeFrame(dtc3, new int[0]);
+
+        var dm25_0 = DM25ExpandedFreezeFrame.create(0, ff1, ff3);
+        when(communicationsModule.requestDM25(any(), eq(0))).thenReturn(BusResult.of(dm25_0));
+
+        runTest();
+
+        verify(communicationsModule).requestDM25(any(), eq(0));
+
+        assertEquals("", listener.getMessages());
+        assertEquals("", listener.getResults());
+        verify(mockListener).addOutcome(PART_NUMBER,
+                                        STEP_NUMBER,
+                                        WARN,
+                                        "6.8.10.3.a - DTC(s) reported by DM23 earlier in this part is/are not present in the freeze frame data from Engine #1 (0)");
+        verify(mockListener).addOutcome(PART_NUMBER,
+                                        STEP_NUMBER,
+                                        FAIL,
+                                        "6.8.10.2.a - DTC(s) reported in the freeze frame by Engine #1 (0) did not include either the DTC reported in DM12 or DM23 earlier in this part");
+    }
+
+    @Test
+    public void testFailureForFreezeFrameWithoutDTC12() {
+        OBDModuleInformation obdModuleInformation = new OBDModuleInformation(0);
+        var dtc1 = DiagnosticTroubleCode.create(123, 4, 0, 1);
+        obdModuleInformation.set(DM12MILOnEmissionDTCPacket.create(0, ON, OFF, OFF, OFF, dtc1), 8);
+        var dtc2 = DiagnosticTroubleCode.create(456, 4, 0, 1);
+        obdModuleInformation.set(DM23PreviouslyMILOnEmissionDTCPacket.create(0, OFF, OFF, OFF, OFF, dtc2), 8);
+        dataRepository.putObdModule(obdModuleInformation);
+
+        var ff1 = new FreezeFrame(dtc1, new int[0]);
+        var ff2 = new FreezeFrame(dtc2, new int[0]);
+        var dtc3 = DiagnosticTroubleCode.create(987, 9, 0, 1);
+        var ff3 = new FreezeFrame(dtc3, new int[0]);
+
+        var dm25_0 = DM25ExpandedFreezeFrame.create(0, ff2, ff3);
+        when(communicationsModule.requestDM25(any(), eq(0))).thenReturn(BusResult.of(dm25_0));
+
+        runTest();
+
+        verify(communicationsModule).requestDM25(any(), eq(0));
+
+        assertEquals("", listener.getMessages());
+        assertEquals("", listener.getResults());
+        verify(mockListener).addOutcome(PART_NUMBER,
+                                        STEP_NUMBER,
+                                        FAIL,
+                                        "6.8.10.2.a - DTC(s) reported in the freeze frame by Engine #1 (0) did not include either the DTC reported in DM12 or DM23 earlier in this part");
+    }
+
+    @Test
+    public void testFailureForFreezeFrameWithDTC() {
         OBDModuleInformation obdModuleInformation = new OBDModuleInformation(0);
         var dtc1 = DiagnosticTroubleCode.create(123, 4, 0, 1);
         obdModuleInformation.set(DM12MILOnEmissionDTCPacket.create(0, ON, OFF, OFF, OFF, dtc1), 8);
@@ -192,6 +254,35 @@ public class Part08Step10ControllerTest extends AbstractControllerTest {
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
+    }
+
+    @Test
+    public void testFailureForFreezeFrameWithoutDTC() {
+        OBDModuleInformation obdModuleInformation = new OBDModuleInformation(0);
+        var dtc1 = DiagnosticTroubleCode.create(123, 4, 0, 1);
+        obdModuleInformation.set(DM12MILOnEmissionDTCPacket.create(0, ON, OFF, OFF, OFF, dtc1), 8);
+        var dtc2 = DiagnosticTroubleCode.create(456, 4, 0, 1);
+        obdModuleInformation.set(DM23PreviouslyMILOnEmissionDTCPacket.create(0, OFF, OFF, OFF, OFF, dtc2), 8);
+        dataRepository.putObdModule(obdModuleInformation);
+
+        var ff1 = new FreezeFrame(dtc1, new int[0]);
+        var ff2 = new FreezeFrame(dtc2, new int[0]);
+        var dtc3 = DiagnosticTroubleCode.create(987, 9, 0, 1);
+        var ff3 = new FreezeFrame(dtc3, new int[0]);
+
+        var dm25_0 = DM25ExpandedFreezeFrame.create(0, ff3);
+        when(communicationsModule.requestDM25(any(), eq(0))).thenReturn(BusResult.of(dm25_0));
+
+        runTest();
+
+        verify(communicationsModule).requestDM25(any(), eq(0));
+
+        assertEquals("", listener.getMessages());
+        assertEquals("", listener.getResults());
+        verify(mockListener).addOutcome(PART_NUMBER,
+                                        STEP_NUMBER,
+                                        WARN,
+                                        "6.8.10.3.a - DTC(s) reported by DM23 earlier in this part is/are not present in the freeze frame data from Engine #1 (0)");
         verify(mockListener).addOutcome(PART_NUMBER,
                                         STEP_NUMBER,
                                         FAIL,
@@ -273,6 +364,10 @@ public class Part08Step10ControllerTest extends AbstractControllerTest {
                                         STEP_NUMBER,
                                         WARN,
                                         "6.8.10.3.a - DTC(s) reported by DM23 earlier in this part is/are not present in the freeze frame data from Engine #1 (0)");
+        verify(mockListener).addOutcome(PART_NUMBER,
+                                        STEP_NUMBER,
+                                        FAIL,
+                                        "6.8.10.2.a - DTC(s) reported in the freeze frame by Engine #1 (0) did not include either the DTC reported in DM12 or DM23 earlier in this part");
     }
 
 }

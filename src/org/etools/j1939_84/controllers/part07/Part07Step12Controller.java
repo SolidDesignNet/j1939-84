@@ -82,12 +82,13 @@ public class Part07Step12Controller extends StepController {
         // 6.7.12.2.b. Fail if DTC in reported Freeze Frame data does not include the DTC provided by DM23 earlier in
         // this part.
         for (DM25ExpandedFreezeFrame dm25 : packets) {
-            int address = dm25.getSourceAddress();
-            for (DiagnosticTroubleCode dtc : getDTCs(address)) {
-                if (dm25.getFreezeFrameWithDTC(dtc) == null) {
-                    addFailure("6.7.12.2.b - " + dm25.getModuleName()
-                            + " did not reported DTC in Freeze Frame data which included the DTC provided by DM23 earlier in this part");
-                }
+            List<DiagnosticTroubleCode> ffDTCs = dm25.getFreezeFrames()
+                                                     .stream()
+                                                     .map(ff -> ff.getDtc())
+                                                     .collect(Collectors.toList());
+            if (!ffDTCs.containsAll(getDTCs(dm25.getSourceAddress()))) {
+                addFailure("6.7.12.2.b - " + dm25.getModuleName()
+                        + " did not reported DTC in Freeze Frame data which included the DTC provided by DM23 earlier in this part");
             }
         }
 
