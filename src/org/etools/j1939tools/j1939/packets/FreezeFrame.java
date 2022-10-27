@@ -65,9 +65,9 @@ public class FreezeFrame {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("  Freeze Frame: {").append(NL);
+        result.append("    Length: ").append(spnData.length).append(NL);
         result.append("    ").append(getDtc()).append(NL);
         int[] spnData = getSpnData();
-        result.append("    Data Length: ").append(spnData.length).append(NL);
         result.append("    SPN Data: ")
               .append(Arrays.stream(spnData)
                             .mapToObj(x -> String.format("%02X", x))
