@@ -207,7 +207,7 @@ public class Part02Step02ControllerTest extends AbstractControllerTest {
                                         FAIL,
                                         "6.2.2.1.a - Global DM5 request did not receive any response packets");
 
-        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse));
+        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse),eq(true));
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
@@ -300,7 +300,7 @@ public class Part02Step02ControllerTest extends AbstractControllerTest {
                                         FAIL,
                                         "6.2.2.4.a - Difference compared to data received during global request");
 
-        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse));
+        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse),eq(true));
 
         assertEquals("", listener.getMessages());
 
@@ -394,7 +394,7 @@ public class Part02Step02ControllerTest extends AbstractControllerTest {
                                         FAIL,
                                         "6.2.2.1.a - Global DM5 request did not receive any response packets");
 
-        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse));
+        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse),eq(true));
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
@@ -481,7 +481,7 @@ public class Part02Step02ControllerTest extends AbstractControllerTest {
                                         WARN,
                                         "6.2.2.3.a - OBD ECU Instrument Cluster #1 (23) did not return a response to a destination specific DM5 request");
 
-        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse));
+        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse),eq(true));
 
         assertEquals("", listener.getMessages());
 
@@ -567,7 +567,7 @@ public class Part02Step02ControllerTest extends AbstractControllerTest {
         verify(communicationsModule).requestDM5(any(), eq(0x17));
         verify(communicationsModule).requestDM5(any(), eq(0x23));
 
-        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse));
+        verify(sectionA6Validator).verify(any(), eq("6.2.2.2.a"), eq(globalRequestResponse),eq(true));
 
         assertEquals("", listener.getMessages());
         String expectedVehicleComposite = NL + "Vehicle Composite of DM5:" + NL +
