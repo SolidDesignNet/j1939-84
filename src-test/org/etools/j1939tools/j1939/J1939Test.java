@@ -54,8 +54,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import net.sf.saxon.expr.parser.XPathParser.Accelerator;
-
 /**
  * Unit test for the {@link J1939} class
  *
