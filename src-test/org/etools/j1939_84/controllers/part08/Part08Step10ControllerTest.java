@@ -184,11 +184,11 @@ public class Part08Step10ControllerTest extends AbstractControllerTest {
         var ff3 = new FreezeFrame(dtc3, new int[0]);
 
         var dm25_0 = DM25ExpandedFreezeFrame.create(0, ff1, ff3);
-        when(communicationsModule.requestDM25(any(), eq(0))).thenReturn(BusResult.of(dm25_0));
+        when(communicationsModule.requestDM25(any(), eq(0), any())).thenReturn(BusResult.of(dm25_0));
 
         runTest();
 
-        verify(communicationsModule).requestDM25(any(), eq(0));
+        verify(communicationsModule).requestDM25(any(), eq(0), any());
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
@@ -217,11 +217,11 @@ public class Part08Step10ControllerTest extends AbstractControllerTest {
         var ff3 = new FreezeFrame(dtc3, new int[0]);
 
         var dm25_0 = DM25ExpandedFreezeFrame.create(0, ff2, ff3);
-        when(communicationsModule.requestDM25(any(), eq(0))).thenReturn(BusResult.of(dm25_0));
+        when(communicationsModule.requestDM25(any(), eq(0), any())).thenReturn(BusResult.of(dm25_0));
 
         runTest();
 
-        verify(communicationsModule).requestDM25(any(), eq(0));
+        verify(communicationsModule).requestDM25(any(), eq(0), any());
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
@@ -271,11 +271,11 @@ public class Part08Step10ControllerTest extends AbstractControllerTest {
         var ff3 = new FreezeFrame(dtc3, new int[0]);
 
         var dm25_0 = DM25ExpandedFreezeFrame.create(0, ff3);
-        when(communicationsModule.requestDM25(any(), eq(0))).thenReturn(BusResult.of(dm25_0));
+        when(communicationsModule.requestDM25(any(), eq(0), any())).thenReturn(BusResult.of(dm25_0));
 
         runTest();
 
-        verify(communicationsModule).requestDM25(any(), eq(0));
+        verify(communicationsModule).requestDM25(any(), eq(0), any());
 
         assertEquals("", listener.getMessages());
         assertEquals("", listener.getResults());
