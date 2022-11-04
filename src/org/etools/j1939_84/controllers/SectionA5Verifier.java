@@ -4,35 +4,48 @@
 package org.etools.j1939_84.controllers;
 
 import static org.etools.j1939_84.J1939_84.NL;
-import static org.etools.j1939_84.model.Outcome.FAIL;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.etools.j1939_84.modules.VehicleInformationModule;
 import org.etools.j1939tools.j1939.J1939;
 import org.etools.j1939tools.j1939.Lookup;
+import org.etools.j1939tools.j1939.packets.GenericPacket;
+import org.etools.j1939tools.modules.CommunicationsModule;
 
-public class SectionA5Verifier {
-    private final DataRepository dataRepository;
-    private final int partNumber;
-    private final int stepNumber;
+public class SectionA5Verifier extends SectionVerifier {
     private final SectionA5MessageVerifier verifier;
+
+    private final SectionA5NoxGhgVerifier sectionA5NoxGhgVerifier;
 
     public SectionA5Verifier(int partNumber, int stepNumber) {
         this(DataRepository.getInstance(),
              new SectionA5MessageVerifier(partNumber, stepNumber),
+             new SectionA5NoxGhgVerifier(partNumber, stepNumber),
+             new CommunicationsModule(),
+             new VehicleInformationModule(),
              partNumber,
              stepNumber);
     }
 
     SectionA5Verifier(DataRepository dataRepository,
                       SectionA5MessageVerifier verifier,
+                      SectionA5NoxGhgVerifier sectionA5NoxGhgVerifier,
+                      CommunicationsModule communicationsModule,
+                      VehicleInformationModule vehicleInformationModule,
                       int partNumber,
                       int stepNumber) {
-        this.dataRepository = dataRepository;
-        this.partNumber = partNumber;
-        this.stepNumber = stepNumber;
+
+        super(dataRepository,
+              communicationsModule,
+              vehicleInformationModule,
+              partNumber,
+              stepNumber);
+
         this.verifier = verifier;
+        this.sectionA5NoxGhgVerifier = sectionA5NoxGhgVerifier;
     }
 
     public void setJ1939(J1939 j1939) {
@@ -41,12 +54,12 @@ public class SectionA5Verifier {
 
     public void verifyDataErased(ResultsListener listener, String section) {
         listener.onResult(NL + section + " - Checking for erased diagnostic information");
-        dataRepository.getObdModuleAddresses().forEach(a -> checkModuleData(listener, section, a, true));
+        getDataRepository().getObdModuleAddresses().forEach(a -> checkModuleData(listener, section, a, true));
     }
 
     public void verifyDataNotErased(ResultsListener listener, String section) {
         listener.onResult(NL + section + " - Checking for erased diagnostic information");
-        dataRepository.getObdModuleAddresses().forEach(a -> checkModuleData(listener, section, a, false));
+        getDataRepository().getObdModuleAddresses().forEach(a -> checkModuleData(listener, section, a, false));
     }
 
     public void verifyDataNotPartialErased(ResultsListener listener,
@@ -58,14 +71,16 @@ public class SectionA5Verifier {
         Set<Boolean> results = new HashSet<>();
 
         // section1 - Fail if any ECU partially erases diagnostic information (pass if it erases either all or none).
-        for (int address : dataRepository.getObdModuleAddresses()) {
-            Result moduleResult = checkModuleDataAsSame(listener, section1, address, verifyIsErased);
-            if (moduleResult.isMixed) {
+        for (int address : getDataRepository().getObdModuleAddresses()) {
+            Result dataAsSameResult = checkModuleDataAsSame(listener, section1, address, verifyIsErased);
+            if (dataAsSameResult.isMixed) {
                 addFailure(listener,
                            section1 + " - " + Lookup.getAddressName(address)
                                    + " partially erased diagnostic information");
             }
-            results.add(moduleResult.isErased);
+            results.add(dataAsSameResult.isErased);
+
+//            verifyGhgNOxBinngData(listener, address, packets);
         }
 
         // section2 - Fail if one or more than one ECU erases diagnostic information and one or more other ECUs do not
@@ -73,6 +88,74 @@ public class SectionA5Verifier {
         if (results.size() != 1) {
             addFailure(listener,
                        section2 + " - One or more than one ECU erased diagnostic information and one or more other ECUs did not erase diagnostic information");
+        }
+    }
+
+    public void verifyDataNotPartialErased(ResultsListener listener,
+                                           String section1,
+                                           String section2,
+                                           boolean verifyIsErased,
+                                           ArrayList<GenericPacket> packets) {
+        listener.onResult(NL + section1 + " - Checking for erased diagnostic information");
+
+        Set<Boolean> results = new HashSet<>();
+
+        // section1 - Fail if any ECU partially erases diagnostic information (pass if it erases either all or none).
+        for (int address : getDataRepository().getObdModuleAddresses()) {
+            Result dataAsSameResult = checkModuleDataAsSame(listener, section1, address, verifyIsErased);
+            if (dataAsSameResult.isMixed) {
+                addFailure(listener,
+                           section1 + " - " + Lookup.getAddressName(address)
+                                   + " partially erased diagnostic information");
+            }
+            results.add(dataAsSameResult.isErased);
+
+            verifyGhgNOxBinngData(listener, address, packets);
+        }
+
+        // section2 - Fail if one or more than one ECU erases diagnostic information and one or more other ECUs do not
+        // erase diagnostic information. See Section A.5.
+        if (results.size() != 1) {
+            addFailure(listener,
+                       section2 + " - One or more than one ECU erased diagnostic information and one or more other ECUs did not erase diagnostic information");
+        }
+    }
+
+    private void verifyGhgNOxBinngData(ResultsListener listener, int address, ArrayList packets) {
+
+        if (getDataRepository().getObdModule(address).supportsSpn(12675)) {
+            sectionA5NoxGhgVerifier.verifyDataSpn12675(listener,
+                                                       getPartNumber(),
+                                                       getStepNumber(),
+                                                       packets);
+        }
+
+        if (getDataRepository().getObdModule(address).supportsSpn(12730)) {
+            sectionA5NoxGhgVerifier.verifyDataSpn12730(listener,
+                                                       getPartNumber(),
+                                                       getStepNumber(),
+                                                       packets);
+        }
+
+        if (getDataRepository().getObdModule(address).supportsSpn(12691)) {
+            sectionA5NoxGhgVerifier.verifyDataSpn12691(listener,
+                                                       getPartNumber(),
+                                                       getStepNumber(),
+                                                       packets);
+        }
+
+        if (getDataRepository().getObdModule(address).supportsSpn(12797)) {
+            sectionA5NoxGhgVerifier.verifyDataSpn12797(listener,
+                                                       getPartNumber(),
+                                                       getStepNumber(),
+                                                       packets);
+        }
+
+        if (getDataRepository().getObdModule(address).supportsSpn(12783)) {
+            sectionA5NoxGhgVerifier.verifyDataSpn12783(listener,
+                                                       getPartNumber(),
+                                                       getStepNumber(),
+                                                       packets);
         }
     }
 
@@ -127,20 +210,6 @@ public class SectionA5Verifier {
         boolean isErased = results.iterator().next();
         boolean isMixed = results.size() != 1;
         return new Result(isErased, isMixed);
-    }
-
-    private void addFailure(ResultsListener listener, String message) {
-        listener.addOutcome(partNumber, stepNumber, FAIL, message);
-    }
-
-    private static class Result {
-        public final boolean isErased;
-        public final boolean isMixed;
-
-        private Result(boolean isErased, boolean isMixed) {
-            this.isErased = isErased;
-            this.isMixed = isMixed;
-        }
     }
 
 }
