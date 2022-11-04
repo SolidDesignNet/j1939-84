@@ -206,14 +206,10 @@ public class TableA6Validator {
 
     private boolean validateHeatedCatalyst(MonitoredSystem system, ResultsListener listener, String section) {
         List<MonitoredSystemStatus> acceptableStatuses = new ArrayList<>();
-        if (isCompressionIgnition()) {
-            acceptableStatuses.addAll(findStatus(0, 0));
-        } else if (isSparkIgnition()) {
+        acceptableStatuses.addAll(findStatus(0, 0));
+        if (isSparkIgnition() && system.getStatus().isEnabled()) {
             acceptableStatuses.addAll(findStatus(1, 1));
-            if (!system.getStatus().isEnabled()) {
-                acceptableStatuses.addAll(findStatus(0, 0));
-                addWarning(system, listener, section);
-            }
+            addWarning(system, listener, section);
         }
         return validate(system, listener, acceptableStatuses, section);
     }
