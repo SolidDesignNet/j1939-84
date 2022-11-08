@@ -345,7 +345,7 @@ public class TableA1Validator {
                       addOutcome(listener,
                                  section,
                                  FAIL,
-                                 "SPN " + spn + " was received as NOT AVAILABLE from " + moduleName);
+                                 "N.1 SPN " + spn + " was received as NOT AVAILABLE from " + moduleName);
                       listener.onResult("");
                       naSPNs.add(spn);
                       notAvailableSPNs.put(moduleAddress, naSPNs);
