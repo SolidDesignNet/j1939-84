@@ -5,15 +5,22 @@ package org.etools.j1939_84.controllers;
 
 import static org.etools.j1939_84.J1939_84.NL;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.etools.j1939_84.modules.VehicleInformationModule;
+import org.etools.j1939tools.bus.Packet;
 import org.etools.j1939tools.j1939.J1939;
 import org.etools.j1939tools.j1939.Lookup;
 import org.etools.j1939tools.j1939.packets.GenericPacket;
 import org.etools.j1939tools.modules.CommunicationsModule;
+import org.etools.j1939tools.modules.GhgTrackingModule;
+import org.etools.j1939tools.modules.NOxBinningModule;
 
 public class SectionA5Verifier extends SectionVerifier {
     private final SectionA5MessageVerifier verifier;
@@ -80,7 +87,7 @@ public class SectionA5Verifier extends SectionVerifier {
             }
             results.add(dataAsSameResult.isErased);
 
-//            verifyGhgNOxBinngData(listener, address, packets);
+            verifyGhgNOxBinngData(listener, address);
         }
 
         // section2 - Fail if one or more than one ECU erases diagnostic information and one or more other ECUs do not
@@ -91,37 +98,17 @@ public class SectionA5Verifier extends SectionVerifier {
         }
     }
 
-    public void verifyDataNotPartialErased(ResultsListener listener,
-                                           String section1,
-                                           String section2,
-                                           boolean verifyIsErased,
-                                           ArrayList<GenericPacket> packets) {
-        listener.onResult(NL + section1 + " - Checking for erased diagnostic information");
-
-        Set<Boolean> results = new HashSet<>();
-
-        // section1 - Fail if any ECU partially erases diagnostic information (pass if it erases either all or none).
-        for (int address : getDataRepository().getObdModuleAddresses()) {
-            Result dataAsSameResult = checkModuleDataAsSame(listener, section1, address, verifyIsErased);
-            if (dataAsSameResult.isMixed) {
-                addFailure(listener,
-                           section1 + " - " + Lookup.getAddressName(address)
-                                   + " partially erased diagnostic information");
-            }
-            results.add(dataAsSameResult.isErased);
-
-            verifyGhgNOxBinngData(listener, address, packets);
-        }
-
-        // section2 - Fail if one or more than one ECU erases diagnostic information and one or more other ECUs do not
-        // erase diagnostic information. See Section A.5.
-        if (results.size() != 1) {
-            addFailure(listener,
-                       section2 + " - One or more than one ECU erased diagnostic information and one or more other ECUs did not erase diagnostic information");
-        }
-    }
-
-    private void verifyGhgNOxBinngData(ResultsListener listener, int address, ArrayList packets) {
+    private void verifyGhgNOxBinngData(ResultsListener listener, int address) {
+        List<GenericPacket> packets = Stream.of(IntStream.of(GhgTrackingModule.GHG_ALL_PG),
+                                                IntStream.of(NOxBinningModule.NOx_ALL_PGNS))
+                                            .flatMapToInt(x -> x)
+                                            .mapToObj(pg -> getCommunicationsModule()
+                                                                                     .request(pg,
+                                                                                              address,
+                                                                                              listener)
+                                                                                     .toPacketStream())
+                                            .flatMap(x -> x)
+                                            .collect(Collectors.toList());
 
         if (getDataRepository().getObdModule(address).supportsSpn(12675)) {
             sectionA5NoxGhgVerifier.verifyDataSpn12675(listener,

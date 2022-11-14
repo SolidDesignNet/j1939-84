@@ -56,7 +56,6 @@ public class SectionA5VerifierTest extends AbstractControllerTest {
     @Mock
     private SectionA5NoxGhgVerifier sectionA5NoxGhgVerifier;
 
-
     @Before
     public void setUp() {
         DateTimeModule.setInstance(new TestDateTimeModule());

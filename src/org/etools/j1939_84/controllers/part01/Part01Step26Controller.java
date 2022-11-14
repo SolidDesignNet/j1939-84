@@ -17,10 +17,10 @@ import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFET
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_HYBRID_CHG_DEPLETING_PG;
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_HYBRID_PG;
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_PG;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_ACTIVITY_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_ACTIVE_100_HOURS_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED_100_HOURS_SPs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_ACTIVITY_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_ACTIVE_100_HOURS_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED_100_HOURS_PGs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -754,8 +754,8 @@ public class Part01Step26Controller extends StepController {
         // 6.1.26.7.a. DS request messages to ECU that indicated support in DM24 for upon
         // request SPN 12675 (NOx Tracking Engine
         var nOxPackets = requestPackets(module.getSourceAddress(),
-                                        CollectionUtils.join(NOx_LIFETIME_SPs,
-                                                             NOx_LIFETIME_ACTIVITY_SPs))
+                                        CollectionUtils.join(NOx_LIFETIME_PGs,
+                                                             NOx_LIFETIME_ACTIVITY_PGs))
                                                                                         .stream()
                                                                                         // 6.1.26.7.b. Record
                                                                                         // each value for use
@@ -784,8 +784,8 @@ public class Part01Step26Controller extends StepController {
         // - Total) for each active 100hr NOx binning PG, followed by each Stored 100 hr PG
         // Label
         List<GenericPacket> nOx100HourPackets = requestPackets(module.getSourceAddress(),
-                                                               CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_SPs,
-                                                                                    NOx_TRACKING_STORED_100_HOURS_SPs))
+                                                               CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_PGs,
+                                                                                    NOx_TRACKING_STORED_100_HOURS_PGs))
                                                                                                                        .stream()
                                                                                                                        // 6.1.26.9.b
                                                                                                                        // -
@@ -821,7 +821,7 @@ public class Part01Step26Controller extends StepController {
                     // FAFFFFFFh for NOx values)
                     validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.10.c");
                     // 6.1.26.10.d. Fail each active 100 hr array value that is greater than zero. (where supported)
-                    List<Integer> active100HrSps = Arrays.stream(NOx_TRACKING_ACTIVE_100_HOURS_SPs)
+                    List<Integer> active100HrSps = Arrays.stream(NOx_TRACKING_ACTIVE_100_HOURS_PGs)
                                                          .boxed()
                                                          .collect(Collectors.toList());
                     if (active100HrSps.contains(packet.getPgnDefinition().getId()) && spn.getValue() > 0) {

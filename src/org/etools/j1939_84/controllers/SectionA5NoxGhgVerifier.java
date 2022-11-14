@@ -17,10 +17,10 @@ import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFET
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_HYBRID_CHG_DEPLETING_PG;
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_HYBRID_PG;
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_PG;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_ACTIVITY_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_ACTIVE_100_HOURS_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED_100_HOURS_SPs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_ACTIVITY_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_ACTIVE_100_HOURS_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED_100_HOURS_PGs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,16 +96,16 @@ public class SectionA5NoxGhgVerifier extends SectionVerifier {
 
         // B. Stored 100-hour Accumulators.
         // The SPNs in the following PGs shall be greater than or equal the corresponding values observed in Part 2,
-        List<Integer> pgns = Arrays.stream(CollectionUtils.join(NOx_LIFETIME_SPs,
-                                                                NOx_LIFETIME_ACTIVITY_SPs,
-                                                                NOx_TRACKING_STORED_100_HOURS_SPs))
+        List<Integer> pgns = Arrays.stream(CollectionUtils.join(NOx_LIFETIME_PGs,
+                                                                NOx_LIFETIME_ACTIVITY_PGs,
+                                                                NOx_TRACKING_STORED_100_HOURS_PGs))
                                    .boxed()
                                    .collect(Collectors.toList());
         verifyPgValuesSameAsTwo(getPartNumber(), getStepNumber(), listener, pgns, packets);
         // C. Active 100-hour Arrays.
         // The SPNs in the following following messages shall be equal to zero only after global DM11 command. They
         // should be no less than their corresponding part 2 values at any other time.
-        List<Integer> pgs = Arrays.stream(NOx_TRACKING_ACTIVE_100_HOURS_SPs).boxed().collect(Collectors.toList());
+        List<Integer> pgs = Arrays.stream(NOx_TRACKING_ACTIVE_100_HOURS_PGs).boxed().collect(Collectors.toList());
         verifyPgValuesZero(getPartNumber(), getStepNumber(), listener, pgs, packets);
 
     }

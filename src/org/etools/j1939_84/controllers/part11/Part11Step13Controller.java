@@ -17,10 +17,10 @@ import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFET
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_HYBRID_CHG_DEPLETING_PG;
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_HYBRID_PG;
 import static org.etools.j1939tools.modules.GhgTrackingModule.GHG_TRACKING_LIFETIME_PG;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_ACTIVITY_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_ACTIVE_100_HOURS_SPs;
-import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED_100_HOURS_SPs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_ACTIVITY_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_LIFETIME_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_ACTIVE_100_HOURS_PGs;
+import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED_100_HOURS_PGs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -606,7 +606,7 @@ public class Part11Step13Controller extends StepController {
         // Tracking Engine Activity Lifetime Fuel Consumption Bin 1 - Total) for all lifetime NOx binning PGs, followed
         // by all Lifetime engine activity PGs
         var nOxPackets = requestPackets(module.getSourceAddress(),
-                                        CollectionUtils.join(NOx_LIFETIME_SPs, NOx_LIFETIME_ACTIVITY_SPs));
+                                        CollectionUtils.join(NOx_LIFETIME_PGs, NOx_LIFETIME_ACTIVITY_PGs));
 
         if (nOxPackets.isEmpty()) {
             // 6.11.13.2.a. Fail each PG query where no response was received.
@@ -656,8 +656,8 @@ public class Part11Step13Controller extends StepController {
             });
         }
 
-        int[] nOx100HourSps = CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_SPs,
-                                                   NOx_TRACKING_STORED_100_HOURS_SPs);
+        int[] nOx100HourSps = CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_PGs,
+                                                   NOx_TRACKING_STORED_100_HOURS_PGs);
         // 6.11.13.3.a - DS request message to ECU that indicated support in DM24 for upon
         // request SPN 12675 (NOx Tracking Engine Activity Lifetime Fuel Consumption Bin 1
         // - Total) for each active 100hr NOx binning PG, followed by each Stored 100 hr PG
