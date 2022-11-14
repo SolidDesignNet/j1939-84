@@ -8,17 +8,12 @@ import static org.etools.j1939_84.J1939_84.NL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.etools.j1939_84.modules.VehicleInformationModule;
 import org.etools.j1939tools.j1939.J1939;
 import org.etools.j1939tools.j1939.Lookup;
 import org.etools.j1939tools.j1939.packets.GenericPacket;
 import org.etools.j1939tools.modules.CommunicationsModule;
-import org.etools.j1939tools.modules.GhgTrackingModule;
-import org.etools.j1939tools.modules.NOxBinningModule;
 
 public class SectionA5Verifier extends SectionVerifier {
     private final SectionA5MessageVerifier verifier;
@@ -96,17 +91,9 @@ public class SectionA5Verifier extends SectionVerifier {
         }
     }
 
-    private void verifyGhgNOxBinngData(ResultsListener listener, int address) {
-        List<GenericPacket> packets = Stream.of(IntStream.of(GhgTrackingModule.GHG_ALL_PG),
-                                                IntStream.of(NOxBinningModule.NOx_ALL_PGNS))
-                                            .flatMapToInt(x -> x)
-                                            .mapToObj(pg -> getCommunicationsModule()
-                                                                                     .request(pg,
-                                                                                              address,
-                                                                                              listener)
-                                                                                     .toPacketStream())
-                                            .flatMap(x -> x)
-                                            .collect(Collectors.toList());
+    /** public for testing **/
+    public void verifyGhgNOxBinngData(ResultsListener listener, int address) {
+        List<GenericPacket> packets = sectionA5NoxGhgVerifier.requestAllGhgNox(address, listener);
 
         if (getDataRepository().getObdModule(address).supportsSpn(12675)) {
             sectionA5NoxGhgVerifier.verifyDataSpn12675(listener,

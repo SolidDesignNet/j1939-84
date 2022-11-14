@@ -254,4 +254,8 @@ public class SectionA5NoxGhgVerifier extends SectionVerifier {
         OBDModuleInformation obdModuleInformation = getDataRepository().getObdModule(address);
         return obdModuleInformation == null ? null : obdModuleInformation.get(pg, partNumber);
     }
+
+    public List<GenericPacket> requestAllGhgNox(int address, ResultsListener listener) {
+        return getCommunicationsModule().requestAllGhgNox(address, listener);
+    }
 }

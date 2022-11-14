@@ -17,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import org.etools.j1939_84.controllers.ResultsListener;
 import org.etools.j1939tools.CommunicationsListener;
 import org.etools.j1939tools.bus.BusResult;
 import org.etools.j1939tools.bus.Packet;
@@ -543,5 +546,14 @@ public class CommunicationsModule extends FunctionalModule {
                                 DM19CalibrationInformationPacket.class,
                                 address,
                                 listener).busResult();
+    }
+
+    public List<GenericPacket> requestAllGhgNox(int address, ResultsListener listener) {
+        return Stream.of(IntStream.of(GhgTrackingModule.GHG_ALL_PG),
+                         IntStream.of(NOxBinningModule.NOx_ALL_PGNS))
+                     .flatMapToInt(x -> x)
+                     .mapToObj(pg -> request(pg, address, listener).toPacketStream())
+                     .flatMap(x -> x)
+                     .collect(Collectors.toList());
     }
 }
