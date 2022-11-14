@@ -57,13 +57,13 @@ public class NOxBinningModule {
     // 64265 NOx Tracking Valid NOx Lifetime Engine Output Energy Bins
     // 64266 NOx Tracking Valid NOx Lifetime Engine Out NOx Mass Bins
     // 64267 NOx Tracking Valid NOx Lifetime System Out NOx Mass Bins
-    public static final int[] NOx_LIFETIME_PGs = { 64262, 64263, 64264, 64265, 64266, 64267 };
+    public static final int[] NOx_LIFETIME_PGs = { 64267, 64266, 64265, 64262, 64263, 64264 };
 
     // 64258 NOx Tracking Engine Activity Lifetime Fuel Consumption Bins
     // 64259 NOx Tracking Engine Activity Lifetime Engine Run Time Bins
     // 64260 NOx Tracking Engine Activity Lifetime Vehicle Distance Bins
     // 64261 NOx Tracking Engine Activity Lifetime Engine Output Energy Bins NTEEEA
-    public static final int[] NOx_LIFETIME_ACTIVITY_PGs = { 64258, 64259, 64260, 64261 };
+    public static final int[] NOx_LIFETIME_ACTIVITY_PGs = { 0, 0, 64261, 64258, 64259, 64260 };
     // PG Acronym NTFCA
     // NTEHA NTVMA NTEEA NTENA
     // NTSNA NTFCS NTEHS NTVMS
@@ -74,20 +74,21 @@ public class NOxBinningModule {
     // 64277 NOx Tracking Active 100 Hour Engine Output Energy Bins
     // 64278 NOx Tracking Active 100 Hour Engine Out NOx Mass Bins
     // 64279 NOx Tracking Active 100 Hour System Out NOx Mass Bins
-    public static final int[] NOx_TRACKING_ACTIVE_100_HOURS_PGs = { 64274, 64275, 64276, 64277, 64278, 64279 };
+    public static final int[] NOx_TRACKING_ACTIVE_100_HOURS_PGs = { 64279, 64278, 64277, 64274, 64275, 64276 };
     // 64268 NOx Tracking Stored 100 Hour
     // 64269 NOx Tracking Stored 100 Hour
     // 64270 NOx Tracking Stored 100 Hour
     // 64271 NOx Tracking Stored 100 Hour
     // 64272 NOx Tracking Stored 100 Hour
     // 64273 NOx Tracking Stored 100 Hour
-    public static final int[] NOx_TRACKING_STORED_100_HOURS_PGs = { 64268, 64269, 64270, 64271, 64272, 64273 };
+    public static final int[] NOx_TRACKING_STORED_100_HOURS_PGs = { 64273, 64272, 64271, 64268, 64269, 64270 };
 
     public static final int[] NOx_ALL_PGNS = Stream.of(IntStream.of(NOx_TRACKING_ACTIVE_100_HOURS_PGs),
                                                        IntStream.of(NOx_TRACKING_STORED_100_HOURS_PGs),
                                                        IntStream.of(NOx_LIFETIME_PGs),
                                                        IntStream.of(NOx_LIFETIME_ACTIVITY_PGs))
                                                    .flatMapToInt(x -> x)
+                                                   .filter(x -> x != 0)
                                                    .toArray();
 
     private final DecimalFormat decimalFormat = new DecimalFormat("#,##0");

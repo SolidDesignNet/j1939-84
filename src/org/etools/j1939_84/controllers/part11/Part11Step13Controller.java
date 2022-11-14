@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.etools.j1939_84.controllers.DataRepository;
@@ -380,10 +381,10 @@ public class Part11Step13Controller extends StepController {
                         + module.getModuleName());
             }
         } else {
-            if(!ghgTrackingLifetimePackets.isEmpty() || !ghgTrackingPackets.isEmpty()) {
+            if (!ghgTrackingLifetimePackets.isEmpty() || !ghgTrackingPackets.isEmpty()) {
                 getListener().onResult(ghgTrackingModule.formatTrackingTable(Stream.concat(ghgTrackingLifetimePackets.stream(),
                                                                                            ghgTrackingPackets.stream())
-                                                                                     .collect(Collectors.toList())));
+                                                                                   .collect(Collectors.toList())));
             }
             ghgTrackingPackets.forEach(packet -> {
                 var partTwoPacket = get(packet.getPgnDefinition().getId(), module.getSourceAddress(), 2);
@@ -605,8 +606,12 @@ public class Part11Step13Controller extends StepController {
         // 6.11.13.1.a. DS request messages to ECU that indicated support in DM24 for upon request SP 12675 (NOx
         // Tracking Engine Activity Lifetime Fuel Consumption Bin 1 - Total) for all lifetime NOx binning PGs, followed
         // by all Lifetime engine activity PGs
+        int[][] intArrays = { NOx_LIFETIME_PGs, NOx_LIFETIME_ACTIVITY_PGs };
         var nOxPackets = requestPackets(module.getSourceAddress(),
-                                        CollectionUtils.join(NOx_LIFETIME_PGs, NOx_LIFETIME_ACTIVITY_PGs));
+                                        Stream.of(intArrays)
+                                              .flatMapToInt(x -> IntStream.of(x))
+                                              .filter(x -> x != 0)
+                                              .toArray());
 
         if (nOxPackets.isEmpty()) {
             // 6.11.13.2.a. Fail each PG query where no response was received.

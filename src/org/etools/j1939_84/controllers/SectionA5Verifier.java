@@ -8,13 +8,11 @@ import static org.etools.j1939_84.J1939_84.NL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.etools.j1939_84.modules.VehicleInformationModule;
-import org.etools.j1939tools.bus.Packet;
 import org.etools.j1939tools.j1939.J1939;
 import org.etools.j1939tools.j1939.Lookup;
 import org.etools.j1939tools.j1939.packets.GenericPacket;

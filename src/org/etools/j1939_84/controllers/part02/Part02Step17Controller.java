@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.etools.j1939_84.controllers.BroadcastValidator;
@@ -813,8 +814,10 @@ public class Part02Step17Controller extends StepController {
     }
 
     private void testSp12675(OBDModuleInformation module) {
-        int[] nOxLifeTimeSps = CollectionUtils.join(NOx_LIFETIME_PGs,
-                                                    NOx_LIFETIME_ACTIVITY_PGs);
+        int[] nOxLifeTimeSps = Stream.of(new int[][] { NOx_LIFETIME_PGs, NOx_LIFETIME_ACTIVITY_PGs })
+                                     .flatMapToInt(x -> IntStream.of(x))
+                                     .filter(x -> x != 0)
+                                     .toArray();
         // 6.2.17.7.a. DS request messages to ECU that indicated support in DM24 for upon
         // request SPN 12675 (NOx Tracking Engine
         var nOxPackets = requestPackets(module.getSourceAddress(),
