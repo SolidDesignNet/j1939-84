@@ -35,23 +35,26 @@ import org.etools.j1939tools.modules.CommunicationsModule;
 import org.etools.j1939tools.utils.CollectionUtils;
 
 public class SectionA5NoxGhgVerifier extends SectionVerifier {
+    private final boolean afterClear;
 
-    SectionA5NoxGhgVerifier(int partNumber, int stepNumber) {
-        this(DataRepository.getInstance(),
+    SectionA5NoxGhgVerifier(boolean afterClear, int partNumber, int stepNumber) {
+        this(true,
+             DataRepository.getInstance(),
              new CommunicationsModule(),
              new VehicleInformationModule(),
              partNumber,
              stepNumber);
     }
 
-    protected SectionA5NoxGhgVerifier(DataRepository dataRepository,
+    protected SectionA5NoxGhgVerifier(boolean afterClear,
+                                      DataRepository dataRepository,
                                       CommunicationsModule communicationsModule,
                                       VehicleInformationModule vehInfoModule,
                                       int partNumber,
                                       int stepNumber) {
 
         super(dataRepository, communicationsModule, vehInfoModule, partNumber, stepNumber);
-
+        this.afterClear = afterClear;
     }
 
     public void verifyDataSpn12730(ResultsListener listener,
@@ -125,8 +128,8 @@ public class SectionA5NoxGhgVerifier extends SectionVerifier {
         // B. Stored 100-hour Accumulators.
         // The SPNs in the following PGs shall be greater than or equal the corresponding values observed in Part 2,
         List<Integer> pgs = new ArrayList<>();
-        pgs.add(GHG_STORED_GREEN_HOUSE_100_HR);
         pgs.add(GHG_TRACKING_LIFETIME_GREEN_HOUSE_PG);
+        pgs.add(GHG_STORED_GREEN_HOUSE_100_HR);
         verifyPgValuesSameAsTwo(getPartNumber(), getStepNumber(), listener, pgs, packets);
 
         // C. Active 100-hour Arrays.
@@ -232,22 +235,24 @@ public class SectionA5NoxGhgVerifier extends SectionVerifier {
                                     ResultsListener listener,
                                     List<Integer> pgns,
                                     List<GenericPacket> packets) {
-        packets.forEach(packet -> {
-
-            if (pgns.contains(packet.getPgnDefinition().getId())) {
-                packet.getSpns().forEach(spn -> {
-                    if (spn.hasValue() && spn.getValue() > 0) {
-                        listener.addOutcome(partNumber,
-                                            stepNumber,
-                                            Outcome.FAIL,
-                                            "Section A.5.C - Value received from " + packet.getModuleName()
-                                                    + " is greater than 0"
-                                                    + " for " + spn);
-                    }
-                });
-            }
-        });
-
+        if (afterClear) {
+            packets.forEach(packet -> {
+                if (pgns.contains(packet.getPgnDefinition().getId())) {
+                    packet.getSpns().forEach(spn -> {
+                        if (spn.hasValue() && spn.getValue() > 0) {
+                            listener.addOutcome(partNumber,
+                                                stepNumber,
+                                                Outcome.FAIL,
+                                                "Section A.5.C - Value received from " + packet.getModuleName()
+                                                        + " is greater than 0"
+                                                        + " for " + spn);
+                        }
+                    });
+                }
+            });
+        } else {
+            verifyPgValuesSameAsTwo(partNumber, stepNumber, listener, pgns, packets);
+        }
     }
 
     protected <T extends GenericPacket> T get(int pg, int address, int partNumber) {

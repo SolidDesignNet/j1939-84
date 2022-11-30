@@ -20,10 +20,10 @@ public class SectionA5Verifier extends SectionVerifier {
 
     private final SectionA5NoxGhgVerifier sectionA5NoxGhgVerifier;
 
-    public SectionA5Verifier(int partNumber, int stepNumber) {
+    public SectionA5Verifier(boolean afterClear, int partNumber, int stepNumber) {
         this(DataRepository.getInstance(),
              new SectionA5MessageVerifier(partNumber, stepNumber),
-             new SectionA5NoxGhgVerifier(partNumber, stepNumber),
+             new SectionA5NoxGhgVerifier(afterClear, partNumber, stepNumber),
              new CommunicationsModule(),
              new VehicleInformationModule(),
              partNumber,

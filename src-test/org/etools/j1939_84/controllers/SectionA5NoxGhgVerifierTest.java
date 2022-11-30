@@ -46,7 +46,7 @@ public class SectionA5NoxGhgVerifierTest {
         dataRepository = DataRepository.newInstance();
         mockListener = mock(ResultsListener.class);
         listener = new TestResultsListener(mockListener);
-        instance = new SectionA5NoxGhgVerifier(dataRepository,
+        instance = new SectionA5NoxGhgVerifier(true, dataRepository,
                                                new CommunicationsModule(),
                                                new VehicleInformationModule(),
                                                0,
