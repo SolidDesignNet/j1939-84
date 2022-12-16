@@ -637,6 +637,7 @@ public class J1939 {
 
     static private Predicate<Packet> after(Packet sent) {
         return new Predicate<Packet>() {
+        	// sent == null for TP requests and some tests
             boolean pass = sent == null;
 
             @Override

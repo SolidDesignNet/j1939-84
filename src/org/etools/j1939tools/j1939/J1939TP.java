@@ -1,9 +1,13 @@
 package org.etools.j1939tools.j1939;
 
-import static org.etools.j1939tools.bus.Packet.PacketException;
-
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -11,13 +15,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.etools.j1939tools.bus.Bus;
 import org.etools.j1939tools.bus.BusException;
 import org.etools.j1939tools.bus.EchoBus;
 import org.etools.j1939tools.bus.Packet;
+import org.etools.j1939tools.bus.Packet.PacketException;
 
 public class J1939TP implements Bus {
 
@@ -152,7 +156,8 @@ public class J1939TP implements Bus {
         } else {
             sent = sendDestinationSpecific(packet.getDestination(), packet);
         }
-        inbound.send(sent);
+        if (sent != null)
+            inbound.send(sent);
         return sent;
     }
 
@@ -241,7 +246,7 @@ public class J1939TP implements Bus {
         int pgn = bam.get24(5);
         int source = bam.getSource();
         int packetId = pgn < 0xF000 ? pgn | bam.getDestination() : pgn;
-        Packet packet = new Packet(LocalDateTime.now(), 6, packetId, source, false, (int[]) null);
+        Packet packet = createEmptyPacket(packetId, source);
         packet.setFragments(new ArrayList<>());
         packet.getFragments().add(bam);
         packet.setTimestamp(bam.getTimestamp());
@@ -391,133 +396,124 @@ public class J1939TP implements Bus {
     }
 
     private Packet sendBam(Packet packet) throws BusException {
-        try (Stream<Packet> echoStream = read(10, TimeUnit.SECONDS)) {
-            int pgn = packet.getPgn();
-            int packetsToSend = packet.getLength() / 7 + 1;
-            int sourceAddress = getAddress();
-            Packet bam = createPacket(CM | 0xFF,
-                                      sourceAddress,
-                                      CM_BAM,
-                                      packet.getLength(),
-                                      packet.getLength() >> 8,
-                                      packetsToSend,
-                                      0xFF,
-                                      0xFF & pgn,
-                                      0xFF & (pgn >> 8),
-                                      (0b111 & (pgn >> 16)));
-            fine("tx BAM", bam);
+        int pgn = packet.getPgn();
+        int packetsToSend = packet.getLength() / 7 + 1;
+        int sourceAddress = getAddress();
+        Packet bam = createPacket(CM | 0xFF,
+                                  sourceAddress,
+                                  CM_BAM,
+                                  packet.getLength(),
+                                  packet.getLength() >> 8,
+                                  packetsToSend,
+                                  0xFF,
+                                  0xFF & pgn,
+                                  0xFF & (pgn >> 8),
+                                  (0b111 & (pgn >> 16)));
+        fine("tx BAM", bam);
 
-            bus.send(bam);
-            // send data
-            int id = DT | 0xFF;
-            for (int i = 0; i < packetsToSend; i++) {
-                byte[] buf = new byte[8];
+        bus.send(bam);
+        // send data
+        int id = DT | 0xFF;
+        for (int i = 0; i < packetsToSend; i++) {
+            byte[] buf = new byte[8];
 
-                int end = Math.min(packet.getLength() - i * 7, 7);
-                System.arraycopy(packet.getBytes(),
-                                 i * 7,
-                                 buf,
-                                 1,
-                                 end);
-                Arrays.fill(buf, end + 1, buf.length, (byte) 0xFF);
-                buf[0] = (byte) (i + 1);
-                sleep(50);
-                Packet dp = createPacket(id, sourceAddress, buf);
+            int end = Math.min(packet.getLength() - i * 7, 7);
+            System.arraycopy(packet.getBytes(),
+                             i * 7,
+                             buf,
+                             1,
+                             end);
+            Arrays.fill(buf, end + 1, buf.length, (byte) 0xFF);
+            buf[0] = (byte) (i + 1);
+            sleep(50);
+            Packet dp = createPacket(id, sourceAddress, buf);
 
-                fine("tx DT.DP", dp);
-                bus.send(dp);
-            }
-            // FIXME this is broken because J1939TP doesn't decode our own traffic.
-            Optional<Packet> echo = echoStream.filter(p -> {
-                System.err.println("BAM echo:" + p + " ~= " + packet);
-                return p.equals(packet);
-            }).findFirst();
-            System.err.println("BAM request echo: " + echo);
-            return echo.orElse(null);
+            fine("tx DT.DP", dp);
+            bus.send(dp);
         }
+        // Don't bother finding echo. It's hard and not useful for TP sends.
+        return null;
     }
 
     public Packet sendDestinationSpecific(int destinationAddress, Packet packet) throws BusException {
-        try (Stream<Packet> echoStream = read(10, TimeUnit.SECONDS)) {
-            int pgn = packet.getPgn();
-            Predicate<Packet> controlMessageFilter = p -> //
-            p.getSource() == destinationAddress
-                    && p.getId(0xFFFF) == (CM | packet.getSource());
+        int pgn = packet.getPgn();
+        Predicate<Packet> controlMessageFilter = p -> //
+        p.getSource() == destinationAddress
+                && p.getId(0xFFFF) == (CM | packet.getSource());
 
-            // send RTS
-            int totalPacketsToSend = packet.getLength() / 7 + 1;
-            Packet rts = createPacket(CM | destinationAddress,
-                                      getAddress(),
-                                      CM_RTS,
-                                      packet.getLength(),
-                                      packet.getLength() >> 8,
-                                      totalPacketsToSend,
-                                      0xFF,
-                                      0xFF & pgn,
-                                      0xFF & (pgn >> 8),
-                                      0xFF & (pgn >> 16));
-            fine("tx RTS", rts);
+        // send RTS
+        int totalPacketsToSend = packet.getLength() / 7 + 1;
+        Packet rts = createPacket(CM | destinationAddress,
+                                  getAddress(),
+                                  CM_RTS,
+                                  packet.getLength(),
+                                  packet.getLength() >> 8,
+                                  totalPacketsToSend,
+                                  0xFF,
+                                  0xFF & pgn,
+                                  0xFF & (pgn >> 8),
+                                  0xFF & (pgn >> 16));
+        fine("tx RTS", rts);
 
-            Stream<Packet> ctsStream = bus.read(T3, TimeUnit.MILLISECONDS)
-                                          .filter(controlMessageFilter);
-            bus.send(rts);
+        Stream<Packet> ctsStream = bus.read(T3, TimeUnit.MILLISECONDS)
+                                      .filter(controlMessageFilter);
+        bus.send(rts);
 
-            // wait for CTS
-            Optional<Packet> ctsOptional = ctsStream.findFirst();
-            while (ctsOptional.map(p -> p.get(0) == CM_CTS).orElse(false)) {
-                Packet cts = ctsOptional.get();
-                fine("rx CTS", cts);
+        // wait for CTS
+        Optional<Packet> ctsOptional = ctsStream.findFirst();
+        while (ctsOptional.map(p -> p.get(0) == CM_CTS).orElse(false)) {
+            Packet cts = ctsOptional.get();
+            fine("rx CTS", cts);
 
-                int packetsToSend = Math.min(cts.get(1), totalPacketsToSend);
-                if (packetsToSend == 0) {
-                    if ((cts.get64() & 0x0000FFFFFFFFFFFFL) != 0x0000FFFFFFFFFFFFL) {
-                        warn("TP.CM_CTS \"hold the connection open\" should be: %04X  %s",
-                             0x0000FFFFFFFFFFFFL,
-                             cts.toString());
-                    }
-                    // wait for CTS
-                    ctsOptional = bus.read(T4, TimeUnit.MILLISECONDS).filter(controlMessageFilter).findFirst();
-                } else {
-                    int offset = cts.get(2);
-                    if (cts.get16(3) != 0xFFFF) {
-                        warn("TP.CM_CTS bytes 4-5 should be FFFF: %04X  %s", cts.get16(3), cts.toString());
-                    }
-                    if (cts.get24(5) != pgn) {
-                        warn("TP.CM_CTS bytes 6-8 should be the PGN: %04X  %s", cts.get24(5), cts.toString());
-                    }
-                    // send data
-                    for (int i = 0; i < packetsToSend; i++) {
-                        byte[] buf = new byte[8];
-                        System.arraycopy(packet.getBytes(),
-                                         (i + offset - 1) * 7,
-                                         buf,
-                                         1,
-                                         Math.min(packet.getLength() - i * 7, 7));
-                        buf[0] = (byte) (i + 1);
-                        Packet dp = createPacket(DT | destinationAddress, getAddress(), buf);
-
-                        fine("tx DP", dp);
-                        bus.send(dp);
-                    }
-                    // wait for CTS or EOM
-                    ctsOptional = bus.read(T3, TimeUnit.MILLISECONDS).filter(controlMessageFilter).findFirst();
+            int packetsToSend = Math.min(cts.get(1), totalPacketsToSend);
+            if (packetsToSend == 0) {
+                if ((cts.get64() & 0x0000FFFFFFFFFFFFL) != 0x0000FFFFFFFFFFFFL) {
+                    warn("TP.CM_CTS \"hold the connection open\" should be: %04X  %s",
+                         0x0000FFFFFFFFFFFFL,
+                         cts.toString());
                 }
-            }
-            ctsOptional.ifPresent(eom -> fine("rx EOM", eom));
+                // wait for CTS
+                ctsOptional = bus.read(T4, TimeUnit.MILLISECONDS).filter(controlMessageFilter).findFirst();
+            } else {
+                int offset = cts.get(2);
+                if (cts.get16(3) != 0xFFFF) {
+                    warn("TP.CM_CTS bytes 4-5 should be FFFF: %04X  %s", cts.get16(3), cts.toString());
+                }
+                if (cts.get24(5) != pgn) {
+                    warn("TP.CM_CTS bytes 6-8 should be the PGN: %04X  %s", cts.get24(5), cts.toString());
+                }
+                // send data
+                for (int i = 0; i < packetsToSend; i++) {
+                    byte[] buf = new byte[8];
+                    System.arraycopy(packet.getBytes(),
+                                     (i + offset - 1) * 7,
+                                     buf,
+                                     1,
+                                     Math.min(packet.getLength() - i * 7, 7));
+                    buf[0] = (byte) (i + 1);
+                    Packet dp = createPacket(DT | destinationAddress, getAddress(), buf);
 
-            if (ctsOptional.map(p -> p.get(0) == CM_ConnAbort).orElse(false)) {
-                // FAIL
-                warn("Abort received: " + getAbortError(ctsOptional.get().get(1)));
-            } else if (ctsOptional.map(p -> p.get(0) != CM_EndOfMessageACK).orElse(true)) {
-                // verify EOM
-                warn((ctsOptional.isPresent() ? "CTS" : "EOM") + " not received.");
-                throw ctsOptional.map(p -> (BusException) new EomBusException())
-                                 .orElse(new CtsBusException());
+                    fine("tx DP", dp);
+                    bus.send(dp);
+                }
+                // wait for CTS or EOM
+                ctsOptional = bus.read(T3, TimeUnit.MILLISECONDS).filter(controlMessageFilter).findFirst();
             }
-
-            // FIXME this is broken, because J1939TP doesn't decode our own taffic.
-            return echoStream.filter(p -> p.equals(packet)).findFirst().orElse(null);
         }
+        ctsOptional.ifPresent(eom -> fine("rx EOM", eom));
+
+        if (ctsOptional.map(p -> p.get(0) == CM_ConnAbort).orElse(false)) {
+            // FAIL
+            warn("Abort received: " + getAbortError(ctsOptional.get().get(1)));
+        } else if (ctsOptional.map(p -> p.get(0) != CM_EndOfMessageACK).orElse(true)) {
+            // verify EOM
+            warn((ctsOptional.isPresent() ? "CTS" : "EOM") + " not received.");
+            throw ctsOptional.map(p -> (BusException) new EomBusException())
+                             .orElse(new CtsBusException());
+        }
+
+        // Don't bother finding echo. It's hard and not useful for TP sends.
+        return null;
     }
 
     private Packet createPacket(int id,

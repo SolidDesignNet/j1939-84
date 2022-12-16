@@ -729,7 +729,7 @@ public class J1939Test {
                                            17));
                     bus.send(Packet.create(VehicleIdentificationPacket.PGN,
                                            0x0,
-                                           2,
+                                           1,
                                            2,
                                            3,
                                            4,
