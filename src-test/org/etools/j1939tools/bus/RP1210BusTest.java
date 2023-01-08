@@ -88,7 +88,9 @@ public class RP1210BusTest {
                                  "J1939:Baud=Auto",
                                  ADDRESS,
                                  true,
-                                 logger);
+                                 logger,
+                                 msg -> {
+                                 });
     }
 
     @Before
@@ -675,7 +677,7 @@ public class RP1210BusTest {
     public static void main(String... args) throws Exception {
         Adapter adapter = new Adapter("Nexiq USBLink 2", "NULN2R32", (short) 1);
         final int TOOL = 0xFA;
-        try (RP1210Bus bus = new RP1210Bus(adapter, "J1939:Baud=Auto", TOOL, true)) {
+        try (RP1210Bus bus = new RP1210Bus(adapter, "J1939:Baud=Auto", TOOL, true,msg->{})) {
 
             Stream<Packet> in = bus.read(1, TimeUnit.DAYS);
             // log any out of order
@@ -698,7 +700,7 @@ public class RP1210BusTest {
             }, "order validation").start();
 
             BigInteger number = new BigInteger("1000000000000000", 16);
-            //noinspection InfiniteLoopStatement
+            // noinspection InfiniteLoopStatement
             while (true) {
                 bus.sendRaw(RP1210Bus.encode(Packet.create(0x18FFFF, TOOL, number.toByteArray())));
                 number = number.add(BigInteger.ONE);
