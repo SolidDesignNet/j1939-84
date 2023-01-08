@@ -3,6 +3,7 @@
  */
 package org.etools.j1939_84.controllers.part09;
 
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -73,7 +74,12 @@ public class Part09Step08Controller extends StepController {
         getDataRepository().getObdModules()
                            .stream()
                            .map(OBDModuleInformation::getSourceAddress)
-                           .filter(a -> !get(DM12MILOnEmissionDTCPacket.class, a, 9).getMalfunctionIndicatorLampStatus().isActive())
+                           .filter(a -> Optional.ofNullable(get(DM12MILOnEmissionDTCPacket.class,
+                                                                a,
+                                                                9))
+                                                .map(p -> !p.getMalfunctionIndicatorLampStatus()
+                                                            .isActive())
+                                                .orElse(true))
                            .forEach(a -> {
                                getCommunicationsModule().requestDM11(getListener(), a);
                            });
@@ -90,7 +96,12 @@ public class Part09Step08Controller extends StepController {
         getDataRepository().getObdModules()
                            .stream()
                            .map(OBDModuleInformation::getSourceAddress)
-                           .filter(a -> get(DM12MILOnEmissionDTCPacket.class, a, 9).getMalfunctionIndicatorLampStatus().isActive())
+                           .filter(a -> Optional.ofNullable(get(DM12MILOnEmissionDTCPacket.class,
+                                                                a,
+                                                                8))
+                                                .map(p -> p.getMalfunctionIndicatorLampStatus()
+                                                           .isActive())
+                                                .orElse(false))
                            .flatMap(a -> {
                                return getCommunicationsModule().requestDM11(getListener(), a).stream();
                            })
