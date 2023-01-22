@@ -46,7 +46,7 @@ public class SectionA5NoxGhgVerifierTest {
         dataRepository = DataRepository.newInstance();
         mockListener = mock(ResultsListener.class);
         listener = new TestResultsListener(mockListener);
-        instance = new SectionA5NoxGhgVerifier(true, dataRepository,
+        instance = new SectionA5NoxGhgVerifier(dataRepository,
                                                new CommunicationsModule(),
                                                new VehicleInformationModule(),
                                                0,
@@ -104,7 +104,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12783(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    false);
 
         String expected = "";
         assertEquals(expected, listener.getResults());
@@ -164,15 +165,16 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12783(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.FAIL),
                                         eq("Section A.5.A - Value received from Engine #1 (0) in part 2 was" +
-                                                   " greater than current value for SPN 12776, Hybrid Stored" +
-                                                   " 100 Hour Distance Traveled in Charge Depleting Operation" +
-                                                   " with Engine Running : 1792.000 km"));
+                                                " greater than current value for SPN 12776, Hybrid Stored" +
+                                                " 100 Hour Distance Traveled in Charge Depleting Operation" +
+                                                " with Engine Running : 1792.000 km"));
 
         String expected = "";
         assertEquals(expected, listener.getResults());
@@ -226,13 +228,14 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12783(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.INFO),
                                         eq("Section A.5.A - Massage from part 2 for PG 64244 is missing" +
-                                                   " so verification of values skipped"));
+                                                " so verification of values skipped"));
 
         String expected = "";
         assertEquals(expected, listener.getResults());
@@ -287,14 +290,15 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12783(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.FAIL),
                                         eq("Section A.5.C - Value received from Engine #1 (0) is greater than 0" +
-                                                   " for SPN 12768, Hybrid Active 100 Hour Distance Traveled in" +
-                                                   " Charge Depleting Operation with Engine Running : 57.250 km"));
+                                                " for SPN 12768, Hybrid Active 100 Hour Distance Traveled in" +
+                                                " Charge Depleting Operation with Engine Running : 57.250 km"));
 
         String expected = "";
         assertEquals(expected, listener.getResults());
@@ -617,7 +621,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12675(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -951,7 +956,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12675(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -1286,7 +1292,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12675(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -1633,7 +1640,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12675(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -1699,7 +1707,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12730(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    false);
 
         String expected = "";
         assertEquals(expected, listener.getResults());
@@ -1764,7 +1773,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12730(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -1829,7 +1839,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12730(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -1894,7 +1905,8 @@ public class SectionA5NoxGhgVerifierTest {
         instance.verifyDataSpn12730(listener,
                                     instance.getPartNumber(),
                                     instance.getStepNumber(),
-                                    packets);
+                                    packets,
+                                    true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -1967,7 +1979,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64256, 2);
         packets.add(response64256);
 
-        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets);
+        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets, false);
 
         String expected = "";
         assertEquals(expected, listener.getResults());
@@ -2043,7 +2055,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64256, 2);
         packets.add(response64256);
 
-        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets);
+        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets, false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -2115,7 +2127,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64256, 2);
         packets.add(response64256);
 
-        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets);
+        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets, false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -2187,7 +2199,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64256, 2);
         packets.add(response64256);
 
-        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets);
+        instance.verifyDataSpn12691(listener, instance.getPartNumber(), instance.getStepNumber(), packets, true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -2258,7 +2270,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64243, 2);
         dataRepository.putObdModule(obdModule0);
 
-        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets);
+        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets, false);
 
         String expected = "";
         assertEquals(expected, listener.getResults());
@@ -2329,7 +2341,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64243, 2);
         dataRepository.putObdModule(obdModule0);
 
-        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets);
+        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets, false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -2399,7 +2411,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64243, 2);
         dataRepository.putObdModule(obdModule0);
 
-        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets);
+        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets, false);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
@@ -2469,7 +2481,7 @@ public class SectionA5NoxGhgVerifierTest {
         obdModule0.set(response64243, 2);
         dataRepository.putObdModule(obdModule0);
 
-        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets);
+        instance.verifyDataSpn12797(listener, instance.getPartNumber(), instance.getPartNumber(), packets, true);
 
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),

@@ -1264,7 +1264,7 @@ public class Part01Step26ControllerTest12730 extends AbstractControllerTest {
         verify(mockListener).addOutcome(eq(1),
                                         eq(26),
                                         eq(FAIL),
-                                        eq("6.1.26.12.b - Bin value received is greater than 0xFAFFFFFFh and less than 0xFFFFFFFFh from Engine #1 (0) for SPN 12730, GHG Tracking Lifetime Engine Run Time: Not Available"));
+                                        eq("6.1.26.12.b - Bin value FFFFFA78h is greater than FAFFFFFFh and less than FFFFFFFFh from Engine #1 (0) for SPN 12730, GHG Tracking Lifetime Engine Run Time: Not Available"));
 
         verify(tableA1Validator).reportExpectedMessages(any(ResultsListener.class));
         verify(tableA1Validator).reportDuplicateSPNs(eq(packets), any(ResultsListener.class), eq("6.1.26.3.e"));

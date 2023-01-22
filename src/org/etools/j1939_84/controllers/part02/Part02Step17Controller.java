@@ -47,9 +47,12 @@ import org.etools.j1939_84.modules.EngineSpeedModule;
 import org.etools.j1939_84.modules.VehicleInformationModule;
 import org.etools.j1939tools.j1939.J1939DaRepository;
 import org.etools.j1939tools.j1939.Lookup;
+import org.etools.j1939tools.j1939.model.ActiveTechnology;
 import org.etools.j1939tools.j1939.model.Spn;
 import org.etools.j1939tools.j1939.model.SpnDefinition;
 import org.etools.j1939tools.j1939.packets.GenericPacket;
+import org.etools.j1939tools.j1939.packets.GhgActiveTechnologyPacket;
+import org.etools.j1939tools.j1939.packets.GhgLifetimeActiveTechnologyPacket;
 import org.etools.j1939tools.j1939.packets.SupportedSPN;
 import org.etools.j1939tools.modules.CommunicationsModule;
 import org.etools.j1939tools.modules.DateTimeModule;
@@ -698,6 +701,8 @@ public class Part02Step17Controller extends StepController {
         var lifetimeGhgPackets = requestPackets(module.getSourceAddress(),
                                                 GHG_TRACKING_LIFETIME_GREEN_HOUSE_PG)
                                                                                      .stream()
+                                                                                     .map(GenericPacket::getPacket)
+                                                                                     .map(GhgLifetimeActiveTechnologyPacket::new)
                                                                                      // 6.2.17.15.b. Record
                                                                                      // each value for use
                                                                                      // in Part 12.
@@ -745,6 +750,8 @@ public class Part02Step17Controller extends StepController {
                                              GHG_ACTIVE_GREEN_HOUSE_100_HR,
                                              GHG_STORED_GREEN_HOUSE_100_HR)
                                                                            .stream()
+                                                                           .map(GenericPacket::getPacket)
+                                                                           .map(GhgActiveTechnologyPacket::new)
                                                                            // 6.2.17.17.b. Record
                                                                            // each value for use
                                                                            // in Part 12.
@@ -778,38 +785,44 @@ public class Part02Step17Controller extends StepController {
             });
         }
 
-        var lifetimeLabels = lifetimeGhgPackets.stream()
-                                               .flatMap(p -> p.getSpns().stream())
-                                               .filter(spn -> spn.getId() == 12691)
-                                               .map(Spn::getValue)
-                                               .collect(Collectors.toCollection(HashSet::new));
-        var activeLabels = ghg100HrPackets.stream()
-                                          .flatMap(p -> p.getSpns().stream())
-                                          .filter(spn -> spn.getId() == 12697)
-                                          .map(Spn::getValue)
-                                          .collect(Collectors.toCollection(HashSet::new));
-        var storedLabels = ghg100HrPackets.stream()
-                                          .flatMap(p -> p.getSpns().stream())
-                                          .filter(spn -> spn.getId() == 12694)
-                                          .map(Spn::getValue)
-                                          .collect(Collectors.toCollection(HashSet::new));
+        var lifetimeIndexes = lifetimeGhgPackets.stream()
+                                                .flatMap(ghgPacket -> ghgPacket.getActiveTechnologies().stream())
+                                                .map(ActiveTechnology::getIndex)
+                                                .collect(Collectors.toList());
 
-        // 6.2.17.18.e. Fail each response where the set of labels received is not a subset of the set of labels
-        // received for the lifetime active technology response
-        if (lifetimeLabels.size() != activeLabels.size()) {
+        var activeIndexes = ghg100HrPackets.stream()
+                                           .filter(p -> {
+                                               return p.getPacket().getPgn() == GHG_ACTIVE_GREEN_HOUSE_100_HR;
+                                           })
+                                           .flatMap(ghgPacket -> ghgPacket.getActiveTechnologies().stream())
+                                           .map(ActiveTechnology::getIndex)
+                                           .collect(Collectors.toList());
+        var storedIndexes = ghg100HrPackets.stream()
+                                           .filter(genericPacket -> {
+                                               return genericPacket.getPgnDefinition()
+                                                                   .getId() == GHG_STORED_GREEN_HOUSE_100_HR;
+                                           })
+                                           .flatMap(ghgPacket -> ghgPacket.getActiveTechnologies().stream())
+                                           .map(ActiveTechnology::getIndex)
+                                           .collect(Collectors.toList());
+
+        // 6.2.17.18.e. Fail each response where the number of labels received are not
+        // the same as the number of labels received for the lifetime technology response.
+        if (lifetimeIndexes.size() != activeIndexes.size()) {
             addFailure("6.2.17.18.e - Number of active labels received differs from the number of lifetime labels");
         }
-        if (lifetimeLabels.size() != storedLabels.size()) {
+        if (lifetimeIndexes.size() != storedIndexes.size()) {
             addFailure("6.2.17.18.e - Number of stored labels received differs from the number of lifetime labels");
         }
 
-        // 6.2.17.18.f. Fail all values where the corresponding value received in part 1 is greater than the part 2
-        // value. (Where supported)
-        if (!lifetimeLabels.equals(activeLabels)) {
-            addFailure("6.2.17.18.f - Active labels received is not an equivalent set of lifetime labels");
+        // 6.2.17.18.f. Fail each response where the set of labels received is not a
+        // subset of the set of labels received for the lifetime’ active technology
+        // response.
+        if (!lifetimeIndexes.containsAll(activeIndexes)) {
+            addFailure("6.2.17.18.f - Active labels received is not a subset of lifetime labels");
         }
-        if (!lifetimeLabels.equals(storedLabels)) {
-            addFailure("6.2.17.18.f - Stored labels received is not an equivalent set of lifetime labels");
+        if (!lifetimeIndexes.containsAll(storedIndexes)) {
+            addFailure("6.2.17.18.f - Stored labels received is not a subset of lifetime labels");
         }
     }
 

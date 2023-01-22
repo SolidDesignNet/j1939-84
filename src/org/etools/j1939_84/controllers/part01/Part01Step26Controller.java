@@ -24,6 +24,7 @@ import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,9 +47,12 @@ import org.etools.j1939_84.modules.EngineSpeedModule;
 import org.etools.j1939_84.modules.VehicleInformationModule;
 import org.etools.j1939tools.j1939.J1939DaRepository;
 import org.etools.j1939tools.j1939.Lookup;
+import org.etools.j1939tools.j1939.model.ActiveTechnology;
 import org.etools.j1939tools.j1939.model.Spn;
 import org.etools.j1939tools.j1939.model.SpnDefinition;
 import org.etools.j1939tools.j1939.packets.GenericPacket;
+import org.etools.j1939tools.j1939.packets.GhgActiveTechnologyPacket;
+import org.etools.j1939tools.j1939.packets.GhgLifetimeActiveTechnologyPacket;
 import org.etools.j1939tools.j1939.packets.SupportedSPN;
 import org.etools.j1939tools.modules.CommunicationsModule;
 import org.etools.j1939tools.modules.DateTimeModule;
@@ -391,7 +395,7 @@ public class Part01Step26Controller extends StepController {
                     + module.getModuleName());
         } else {
             ghgLifeTimePackets.forEach(packet -> {
-                packet.getSpns()
+                packet.getSpns() // FIXME
                       .forEach(spn -> {
                           // 6.1.26.24.b - Fail PG query where any accumulator value
                           // received is greater than FAFFFFFFh.
@@ -441,7 +445,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             hybridChargeOpsPackets.forEach(packet -> {
-                packet.getSpns()
+                packet.getSpns() // // FIXME is this the same as GHG
                       .forEach(spn -> {
                           /// 6.1.26.26.c - Fail each PG query where any active
                           /// technology label or accumulator value
@@ -475,7 +479,7 @@ public class Part01Step26Controller extends StepController {
                     + GHG_TRACKING_LIFETIME_HYBRID_PG);
         } else {
             ghgTrackingPackets.forEach(packet -> {
-                packet.getSpns()
+                packet.getSpns()// FIXME
                       .forEach(spn -> {
                           // 6.1.26.20.b - Fail PG query where any accumulator value
                           // received is greater than FAFFFFFFh.
@@ -528,7 +532,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             ghgPackets.forEach(packet -> {
-                packet.getSpns()
+                packet.getSpns() // FIXME
                       .forEach(spn -> {
                           // 6.1.26.22.c. Fail each PG query where any accumulator
                           // value received is greater than FAFFh.
@@ -559,7 +563,7 @@ public class Part01Step26Controller extends StepController {
                     + module.getModuleName());
         } else {
             ghgTrackingLifetimePackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> {
+                packet.getSpns().forEach(spn -> { // FIXME
                     // 6.1.26.12.b. Fail PG query where any bin value received is greater than FAFFFFFFh.
                     validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.12.b");
                 });
@@ -603,7 +607,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             ghgTrackingPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> {
+                packet.getSpns().forEach(spn -> { // FIXME
                     if (spn.hasValue()) {
                         // 6.1.26.14.c. Fail each PG query where any bin value received is greater
                         // than FAFFh and less than FFFFh (Use FAFFFFFFh and less than FFFFFFFFh
@@ -630,6 +634,8 @@ public class Part01Step26Controller extends StepController {
         var lifetimeGhgPackets = requestPackets(module.getSourceAddress(),
                                                 GHG_TRACKING_LIFETIME_GREEN_HOUSE_PG)
                                                                                      .stream()
+                                                                                     .map(GenericPacket::getPacket)
+                                                                                     .map(GhgLifetimeActiveTechnologyPacket::new)
                                                                                      // 6.1.26.15.b. Record
                                                                                      // each value for use
                                                                                      // in Part 2.
@@ -642,7 +648,7 @@ public class Part01Step26Controller extends StepController {
                     + module.getModuleName());
         } else {
             lifetimeGhgPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> {
+                packet.getSpns().forEach(spn -> { // FIXME
                     if (spn.hasValue()) {
                         if (spn.getId() != 12691) {
                             // 6.1.26.16.b. Fail any accumulator value received that is greater
@@ -671,6 +677,8 @@ public class Part01Step26Controller extends StepController {
                                              GHG_ACTIVE_GREEN_HOUSE_100_HR,
                                              GHG_STORED_GREEN_HOUSE_100_HR)
                                                                            .stream()
+                                                                           .map(GenericPacket::getPacket)
+                                                                           .map(GhgActiveTechnologyPacket::new)
                                                                            // 6.1.26.17.b. Record
                                                                            // each value for use
                                                                            // in Part 2.
@@ -697,7 +705,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             ghg100HrPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> {
+                packet.getSpns().forEach(spn -> {// FIXME
                     if (spn.hasValue()) {
                         if (spn.getId() != 12691 && spn.getId() != 12694 && spn.getId() != 12697) {
                             // 6.1.26.18.c. Fail PG query where any bin value received is greater than FAFFh.
@@ -710,44 +718,49 @@ public class Part01Step26Controller extends StepController {
                     if (GHG_ACTIVE_GREEN_HOUSE_100_HR == packet.getPgnDefinition().getId() && spn.getValue() > 0) {
                         // 6.1.26.18.g. Fail each active 100 hr array value that is greater than zero
                         addFailure("6.1.26.18.g - Active 100 hr array value received was greater than zero from "
-                                + module.getModuleName() + " for SPN " + spn);
+                                + module.getModuleName() + " for " + spn);
                     }
                 });
             });
         }
+        var lifetimeIndexes = lifetimeGhgPackets.stream()
+                                                .flatMap(ghgPacket -> ghgPacket.getActiveTechnologies().stream())
+                                                .map(ActiveTechnology::getIndex)
+                                                .collect(Collectors.toList());
 
-        var lifetimeLabels = lifetimeGhgPackets.stream()
-                                               .flatMap(p -> p.getSpns().stream())
-                                               .map(Spn::getValue)
-                                               .collect(Collectors.toCollection(ArrayList::new));
-        var activeLabels = ghg100HrPackets.stream()
-                                          .filter(p -> p.getPgnDefinition().getId() == 64256)
-                                          .flatMap(p -> p.getSpns().stream())
-                                          .map(Spn::getValue)
-                                          .collect(Collectors.toCollection(ArrayList::new));
-        var storedLabels = ghg100HrPackets.stream()
-                                          .filter(p -> p.getPgnDefinition().getId() == 64255)
-                                          .flatMap(p -> p.getSpns().stream())
-                                          .map(Spn::getValue)
-                                          .collect(Collectors.toCollection(ArrayList::new));
+        var activeIndexes = ghg100HrPackets.stream()
+                                           .filter(p -> {
+                                               return p.getPacket().getPgn() == GHG_ACTIVE_GREEN_HOUSE_100_HR;
+                                           })
+                                           .flatMap(ghgPacket -> ghgPacket.getActiveTechnologies().stream())
+                                           .map(ActiveTechnology::getIndex)
+                                           .collect(Collectors.toList());
+        var storedIndexes = ghg100HrPackets.stream()
+                                           .filter(genericPacket -> {
+                                               return genericPacket.getPgnDefinition()
+                                                                   .getId() == GHG_STORED_GREEN_HOUSE_100_HR;
+                                           })
+                                           .flatMap(ghgPacket -> ghgPacket.getActiveTechnologies().stream())
+                                           .map(ActiveTechnology::getIndex)
+                                           .collect(Collectors.toList());
 
-        // 6.1.26.18.e. Fail each response where the set of labels received is not a subset of the set of labels
-        // received for the lifetime active technology response
-        if (lifetimeLabels.size() != activeLabels.size()) {
+        // 6.1.26.18.e. Fail each response where the number of labels received are not
+        // the same as the number of labels received for the lifetime technology response.
+        if (lifetimeIndexes.size() != activeIndexes.size()) {
             addFailure("6.1.26.18.e - Number of active labels received differs from the number of lifetime labels");
         }
-        if (lifetimeLabels.size() != storedLabels.size()) {
+        if (lifetimeIndexes.size() != storedIndexes.size()) {
             addFailure("6.1.26.18.e - Number of stored labels received differs from the number of lifetime labels");
         }
 
-        // 6.1.26.18.f. Fail each response where the set of labels received is not a equivalent to the set of
-        // labels received for the lifetime active technology response.
-        // Equivalent sets not subsets.
-        if (!lifetimeLabels.equals(activeLabels)) {
-            addFailure("6.1.26.18.f - Active labels received is not an equivalent set of lifetime labels");
+        // 6.1.26.18.f. Fail each response where the set of labels received is not a
+        // subset of the set of labels received for the lifetime’ active technology
+        // response.
+        if (!lifetimeIndexes.containsAll(activeIndexes)) {
+            addFailure("6.1.26.18.f - Active labels received is not a subset of lifetime labels");
         }
-        if (!lifetimeLabels.equals(storedLabels)) {
-            addFailure("6.1.26.18.f - Stored labels received is not an equivalent set of lifetime labels");
+        if (!lifetimeIndexes.containsAll(storedIndexes)) {
+            addFailure("6.1.26.18.f - Stored labels received is not a subset of lifetime labels");
         }
     }
 
@@ -775,7 +788,7 @@ public class Part01Step26Controller extends StepController {
             // 6.1.26.7.c. List data received in a table using bin numbers for rows.
             getListener().onResult(nOxBinningModule.format(nOxPackets));
             nOxPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> {
+                packet.getSpns().forEach(spn -> { // FIXME
                     // 6.1.26.8.b. Fail each PG query where any bin value received
                     // is greater than FAFFFFFFh.
                     validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.8.b");
@@ -820,7 +833,7 @@ public class Part01Step26Controller extends StepController {
             getListener().onResult(nOxBinningModule.format(nOx100HourPackets));
 
             nOx100HourPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> {
+                packet.getSpns().forEach(spn -> { // FIXME
                     // 6.1.26.10.c. Fail each PG query where any bin value received is greater than FAFFh. (Use
                     // FAFFFFFFh for NOx values)
                     validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.10.c");
@@ -840,4 +853,15 @@ public class Part01Step26Controller extends StepController {
 
     }
 
+    enum TEST {
+        JOE, CARSON;
+
+        public int age;
+    }
+
+    {
+        TEST.JOE.age = 60;
+        TEST.JOE.age = 51;
+        List<Integer> immutableList = Collections.unmodifiableList(List.of(1, 2, 3));
+    }
 }
