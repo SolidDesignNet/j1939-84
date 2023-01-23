@@ -24,6 +24,7 @@ import static org.etools.j1939tools.modules.NOxBinningModule.NOx_TRACKING_STORED
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -374,20 +375,22 @@ public class Part01Step26Controller extends StepController {
         // SP 12783 (Hybrid Lifetime Distance Traveled in Charge Depleting Operation with
         // Engine off) for
         // PG 64244 Hybrid Charge Depleting or Increasing Operation Lifetime Hours
-        List<GenericPacket> ghgLifeTimePackets = requestPackets(module.getSourceAddress(),
-                                                                GHG_TRACKING_LIFETIME_HYBRID_CHG_DEPLETING_PG)
-                                                                                                              .stream()
-                                                                                                              // 6.1.26.23.b.
-                                                                                                              // Record
-                                                                                                              // each
-                                                                                                              // value
-                                                                                                              // for
-                                                                                                              // use
-                                                                                                              // in
-                                                                                                              // Part
-                                                                                                              // 12.
-                                                                                                              .peek(this::save)
-                                                                                                              .collect(Collectors.toList());
+        int[] pgns = { GHG_TRACKING_LIFETIME_HYBRID_CHG_DEPLETING_PG };
+        var ghgLifeTimePackets = requestPackets(module.getSourceAddress(), pgns).stream()
+                                                                                .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                .collect(Collectors.toList())
+                                                                                .stream()
+                                                                                // 6.1.26.23.b.
+                                                                                // Record
+                                                                                // each
+                                                                                // value
+                                                                                // for
+                                                                                // use
+                                                                                // in
+                                                                                // Part
+                                                                                // 12.
+                                                                                .peek(this::save)
+                                                                                .collect(Collectors.toList());
 
         if (ghgLifeTimePackets.isEmpty()) {
             // 6.1.26.24.a. Fail PG query where no response was received
@@ -395,7 +398,7 @@ public class Part01Step26Controller extends StepController {
                     + module.getModuleName());
         } else {
             ghgLifeTimePackets.forEach(packet -> {
-                packet.getSpns() // FIXME
+                packet.getSpns()
                       .forEach(spn -> {
                           // 6.1.26.24.b - Fail PG query where any accumulator value
                           // received is greater than FAFFFFFFh.
@@ -403,6 +406,7 @@ public class Part01Step26Controller extends StepController {
                       });
             });
         }
+        int[] pgns1 = { GHG_STORED_HYBRID_CHG_DEPLETING_100_HR, GHG_ACTIVE_HYBRID_CHG_DEPLETING_100_HR };
 
         // 6.1.26.24 Actions13 for MY2022+ Plug-in HEV DRIVES
         // a. DS request message to ECU that indicated support in DM24 for upon request
@@ -413,15 +417,16 @@ public class Part01Step26Controller extends StepController {
         // 64246 Hybrid Charge Depleting or Increasing Operation Active 100 Hours
         // 64245 Hybrid Charge Depleting or Increasing Operation Stored 100 Hours
         // PG Acronym HCDIOA HCDIOS
-        var hybridChargeOpsPackets = requestPackets(module.getSourceAddress(),
-                                                    GHG_STORED_HYBRID_CHG_DEPLETING_100_HR,
-                                                    GHG_ACTIVE_HYBRID_CHG_DEPLETING_100_HR)
-                                                                                           .stream()
-                                                                                           // 6.1.26.25.b. Record
-                                                                                           // each value for use in Part
-                                                                                           // 2.
-                                                                                           .peek(this::save)
-                                                                                           .collect(Collectors.toList());
+        var hybridChargeOpsPackets = requestPackets(module.getSourceAddress(), pgns1).stream()
+                                                                                     .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                     .collect(Collectors.toList())
+                                                                                     .stream()
+                                                                                     // 6.1.26.25.b. Record
+                                                                                     // each value for use in
+                                                                                     // Part
+                                                                                     // 2.
+                                                                                     .peek(this::save)
+                                                                                     .collect(Collectors.toList());
 
         if (!hybridChargeOpsPackets.isEmpty() || !ghgLifeTimePackets.isEmpty()) {
             // 6.1.26.25.c - List data received in a table using lifetime, stored 100 hr, active 100hr for columns, and
@@ -445,7 +450,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             hybridChargeOpsPackets.forEach(packet -> {
-                packet.getSpns() // // FIXME is this the same as GHG
+                packet.getSpns()
                       .forEach(spn -> {
                           /// 6.1.26.26.c - Fail each PG query where any active
                           /// technology label or accumulator value
@@ -461,8 +466,10 @@ public class Part01Step26Controller extends StepController {
         // a. DS request message to ECU that indicated support in DM24 for upon request
         // SP 12797 (Hybrid Lifetime Propulsion System Active Time) for 64241 PSA Times
         // Lifetime Hours
-        var ghgTrackingPackets = requestPackets(module.getSourceAddress(),
-                                                GHG_TRACKING_LIFETIME_HYBRID_PG)
+        int[] pgns = { GHG_TRACKING_LIFETIME_HYBRID_PG };
+        var ghgTrackingPackets = requestPackets(module.getSourceAddress(), pgns).stream()
+                                                                                .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                .collect(Collectors.toList())
                                                                                 .stream()
                                                                                 // 6.1.26.19.b.
                                                                                 // Record
@@ -479,7 +486,7 @@ public class Part01Step26Controller extends StepController {
                     + GHG_TRACKING_LIFETIME_HYBRID_PG);
         } else {
             ghgTrackingPackets.forEach(packet -> {
-                packet.getSpns()// FIXME
+                packet.getSpns()
                       .forEach(spn -> {
                           // 6.1.26.20.b - Fail PG query where any accumulator value
                           // received is greater than FAFFFFFFh.
@@ -501,15 +508,16 @@ public class Part01Step26Controller extends StepController {
         // c. List data received in a table using lifetime, stored 100 hr, active 100hr
         // for columns, and categories for rows.
         int[] hybridLifeTimePgs = { GHG_STORED_HYBRID_100_HR, GHG_ACTIVE_HYBRID_100_HR };
-        List<GenericPacket> ghgPackets = requestPackets(module.getSourceAddress(),
-                                                        hybridLifeTimePgs)
-                                                                          .stream()
-                                                                          // 6.1.26.21.b.
-                                                                          // Record each
-                                                                          // value for use
-                                                                          // in Part 2.
-                                                                          .peek(this::save)
-                                                                          .collect(Collectors.toList());
+        var ghgPackets = requestPackets(module.getSourceAddress(), hybridLifeTimePgs).stream()
+                                                                                     .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                     .collect(Collectors.toList())
+                                                                                     .stream()
+                                                                                     // 6.1.26.21.b.
+                                                                                     // Record each
+                                                                                     // value for use
+                                                                                     // in Part 2.
+                                                                                     .peek(this::save)
+                                                                                     .collect(Collectors.toList());
 
         if (!ghgTrackingPackets.isEmpty() || !ghgPackets.isEmpty()) {
             // 6.1.26.21.c. List data received in a table using bin numbers for rows.
@@ -532,7 +540,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             ghgPackets.forEach(packet -> {
-                packet.getSpns() // FIXME
+                packet.getSpns()
                       .forEach(spn -> {
                           // 6.1.26.22.c. Fail each PG query where any accumulator
                           // value received is greater than FAFFh.
@@ -548,14 +556,17 @@ public class Part01Step26Controller extends StepController {
         // 6.1.26.11 Actions6 for all MY2022+ Engines
         // 6.1.26.11.a - DS request messages to ECU that indicated support in DM24 for upon request SP 12730 (GHG
         // Tracking Lifetime Engine Run Time) for PG 64252 GHG Tracking Lifetime Array Data.
-        var ghgTrackingLifetimePackets = requestPackets(module.getSourceAddress(),
-                                                        GHG_TRACKING_LIFETIME_PG)
-                                                                                 .stream()
-                                                                                 .filter(Objects::nonNull)
-                                                                                 // 6.1.26.11.b - Record each value
-                                                                                 // for use in Part 2.
-                                                                                 .peek(this::save)
-                                                                                 .collect(Collectors.toList());
+        int[] pgns = { GHG_TRACKING_LIFETIME_PG };
+        var ghgTrackingLifetimePackets = requestPackets(module.getSourceAddress(), pgns).stream()
+                                                                                        .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                        .collect(Collectors.toList())
+                                                                                        .stream()
+                                                                                        .filter(Objects::nonNull)
+                                                                                        // 6.1.26.11.b - Record each
+                                                                                        // value
+                                                                                        // for use in Part 2.
+                                                                                        .peek(this::save)
+                                                                                        .collect(Collectors.toList());
 
         if (ghgTrackingLifetimePackets.isEmpty()) {
             // 6.1.26.12.a. Fail PG query where no response was received
@@ -563,12 +574,13 @@ public class Part01Step26Controller extends StepController {
                     + module.getModuleName());
         } else {
             ghgTrackingLifetimePackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> { // FIXME
+                packet.getSpns().forEach(spn -> {
                     // 6.1.26.12.b. Fail PG query where any bin value received is greater than FAFFFFFFh.
                     validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.12.b");
                 });
             });
         }
+        int[] pgns1 = { GHG_ACTIVE_100_HR, GHG_STORED_100_HR };
 
         // 6.1.26.13 Actions7 for MY2022+ Engines
         // 6.1.26.13.a. DS request message to ECU that indicated support in DM24 for upon request
@@ -576,15 +588,15 @@ public class Part01Step26Controller extends StepController {
         // PG Label
         // 64254 GHG Tracking Active 100 Hour Array Data
         // 64253 GHG Tracking Stored 100 Hour Array Data
-        var ghgTrackingPackets = requestPackets(module.getSourceAddress(),
-                                                GHG_ACTIVE_100_HR,
-                                                GHG_STORED_100_HR)
-                                                                  .stream()
-                                                                  // 6.1.26.13.b. Record
-                                                                  // each value for use
-                                                                  // in Part 2.
-                                                                  .peek(this::save)
-                                                                  .collect(Collectors.toList());
+        var ghgTrackingPackets = requestPackets(module.getSourceAddress(), pgns1).stream()
+                                                                                 .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                 .collect(Collectors.toList())
+                                                                                 .stream()
+                                                                                 // 6.1.26.13.b. Record
+                                                                                 // each value for use
+                                                                                 // in Part 2.
+                                                                                 .peek(this::save)
+                                                                                 .collect(Collectors.toList());
 
         if (!ghgTrackingLifetimePackets.isEmpty() || !ghgTrackingPackets.isEmpty()) {
             // 6.1.26.13.c. List data received in a table using lifetime, stored 100 hr, active 100hr for columns, and
@@ -607,7 +619,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             ghgTrackingPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> { // FIXME
+                packet.getSpns().forEach(spn -> {
                     if (spn.hasValue()) {
                         // 6.1.26.14.c. Fail each PG query where any bin value received is greater
                         // than FAFFh and less than FFFFh (Use FAFFFFFFh and less than FFFFFFFFh
@@ -631,16 +643,19 @@ public class Part01Step26Controller extends StepController {
         // a. DS request message to ECU that indicated support in DM24 for upon request
         // SP 12691 (GHG Tracking Lifetime Active Technology Index) for
         // PG 64257 Green House Gas Lifetime Active Technology Tracking.
-        var lifetimeGhgPackets = requestPackets(module.getSourceAddress(),
-                                                GHG_TRACKING_LIFETIME_GREEN_HOUSE_PG)
-                                                                                     .stream()
-                                                                                     .map(GenericPacket::getPacket)
-                                                                                     .map(GhgLifetimeActiveTechnologyPacket::new)
-                                                                                     // 6.1.26.15.b. Record
-                                                                                     // each value for use
-                                                                                     // in Part 2.
-                                                                                     .peek(this::save)
-                                                                                     .collect(Collectors.toList());
+        int[] pgns = { GHG_TRACKING_LIFETIME_GREEN_HOUSE_PG };
+        var lifetimeGhgPackets = requestPackets(module.getSourceAddress(), pgns).stream()
+                                                                                .map(p2 -> (GhgActiveTechnologyPacket) p2)
+                                                                                .collect(Collectors.toList())
+                                                                                .stream()
+                                                                                .map(p1 -> (GhgLifetimeActiveTechnologyPacket) p1)
+                                                                                .collect(Collectors.toList())
+                                                                                .stream()
+                                                                                // 6.1.26.15.b. Record
+                                                                                // each value for use
+                                                                                // in Part 2.
+                                                                                .peek(this::save)
+                                                                                .collect(Collectors.toList());
 
         if (lifetimeGhgPackets.isEmpty()) {
             // 6.1.26.16.a. Warn PG query where no response was received.
@@ -648,7 +663,7 @@ public class Part01Step26Controller extends StepController {
                     + module.getModuleName());
         } else {
             lifetimeGhgPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> { // FIXME
+                packet.getSpns().forEach(spn -> {
                     if (spn.hasValue()) {
                         if (spn.getId() != 12691) {
                             // 6.1.26.16.b. Fail any accumulator value received that is greater
@@ -673,17 +688,13 @@ public class Part01Step26Controller extends StepController {
         // 64256 Green House Gas Active 100 Hour Active Technology Tracking
         // 64255 Green House Gas Stored 100 Hour Active Technology Tracking
         // PG Acronym GHGTTA GHGTTS
-        var ghg100HrPackets = requestPackets(module.getSourceAddress(),
-                                             GHG_ACTIVE_GREEN_HOUSE_100_HR,
-                                             GHG_STORED_GREEN_HOUSE_100_HR)
-                                                                           .stream()
-                                                                           .map(GenericPacket::getPacket)
-                                                                           .map(GhgActiveTechnologyPacket::new)
-                                                                           // 6.1.26.17.b. Record
-                                                                           // each value for use
-                                                                           // in Part 2.
-                                                                           .peek(this::save)
-                                                                           .collect(Collectors.toList());
+        var ghg100HrPackets = requestGhgTechPackets(module.getSourceAddress())
+                                                                              .stream()
+                                                                              // 6.1.26.17.b. Record
+                                                                              // each value for use
+                                                                              // in Part 2.
+                                                                              .peek(this::save)
+                                                                              .collect(Collectors.toList());
         if (!ghg100HrPackets.isEmpty() || !lifetimeGhgPackets.isEmpty()) {
             // 6.1.26.17.c. List data received in a table using lifetime, stored 100 hr,
             // active 100hr for columns, and categories for rows.
@@ -705,7 +716,7 @@ public class Part01Step26Controller extends StepController {
             }
         } else {
             ghg100HrPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> {// FIXME
+                packet.getSpns().forEach(spn -> {
                     if (spn.hasValue()) {
                         if (spn.getId() != 12691 && spn.getId() != 12694 && spn.getId() != 12697) {
                             // 6.1.26.18.c. Fail PG query where any bin value received is greater than FAFFh.
@@ -764,6 +775,26 @@ public class Part01Step26Controller extends StepController {
         }
     }
 
+    private Collection<GhgLifetimeActiveTechnologyPacket> requestGhgLifetimeTechPackets(int sourceAddress) {
+        int[] pgns = { GHG_TRACKING_LIFETIME_GREEN_HOUSE_PG };
+        return requestPackets(sourceAddress, pgns).stream()
+                                                  .map(p1 -> (GhgActiveTechnologyPacket) p1)
+                                                  .collect(Collectors.toList())
+                                                  .stream()
+                                                  .map(p -> (GhgLifetimeActiveTechnologyPacket) p)
+                                                  .collect(Collectors.toList());
+    }
+
+    private Collection<GhgActiveTechnologyPacket> requestGhgTechPackets(int sourceAddress) {
+        int[] pgns = { GHG_ACTIVE_GREEN_HOUSE_100_HR, GHG_STORED_GREEN_HOUSE_100_HR };
+        return requestPackets(sourceAddress, pgns).stream()
+                                                  .map(p1 -> (GhgActiveTechnologyPacket) p1)
+                                                  .collect(Collectors.toList())
+                                                  .stream()
+                                                  .map(p -> (GhgActiveTechnologyPacket) p)
+                                                  .collect(Collectors.toList());
+    }
+
     private void testSp12675(OBDModuleInformation module) {
         // 6.1.26.7.a. DS request messages to ECU that indicated support in DM24 for upon
         // request SPN 12675 (NOx Tracking Engine
@@ -788,7 +819,7 @@ public class Part01Step26Controller extends StepController {
             // 6.1.26.7.c. List data received in a table using bin numbers for rows.
             getListener().onResult(nOxBinningModule.format(nOxPackets));
             nOxPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> { // FIXME
+                packet.getSpns().forEach(spn -> {
                     // 6.1.26.8.b. Fail each PG query where any bin value received
                     // is greater than FAFFFFFFh.
                     validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.8.b");
@@ -800,22 +831,22 @@ public class Part01Step26Controller extends StepController {
         // request SPN 12675 (NOx Tracking Engine Activity Lifetime Fuel Consumption Bin 1
         // - Total) for each active 100hr NOx binning PG, followed by each Stored 100 hr PG
         // Label
-        List<GenericPacket> nOx100HourPackets = requestPackets(module.getSourceAddress(),
-                                                               CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_PGs,
-                                                                                    NOx_TRACKING_STORED_100_HOURS_PGs))
-                                                                                                                       .stream()
-                                                                                                                       // 6.1.26.9.b
-                                                                                                                       // -
-                                                                                                                       // Record
-                                                                                                                       // each
-                                                                                                                       // value
-                                                                                                                       // for
-                                                                                                                       // use
-                                                                                                                       // in
-                                                                                                                       // Part
-                                                                                                                       // 2.
-                                                                                                                       .peek(this::save)
-                                                                                                                       .collect(Collectors.toList());
+        var nOx100HourPackets = requestPackets(module.getSourceAddress(),
+                                               CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_PGs,
+                                                                    NOx_TRACKING_STORED_100_HOURS_PGs))
+                                                                                                       .stream()
+                                                                                                       // 6.1.26.9.b
+                                                                                                       // -
+                                                                                                       // Record
+                                                                                                       // each
+                                                                                                       // value
+                                                                                                       // for
+                                                                                                       // use
+                                                                                                       // in
+                                                                                                       // Part
+                                                                                                       // 2.
+                                                                                                       .peek(this::save)
+                                                                                                       .collect(Collectors.toList());
 
         if (nOx100HourPackets.isEmpty()) {
             // 6.1.26.10.a. For all MY2024+ Diesel engines, Fail each PG query where no response was received.
@@ -833,7 +864,7 @@ public class Part01Step26Controller extends StepController {
             getListener().onResult(nOxBinningModule.format(nOx100HourPackets));
 
             nOx100HourPackets.forEach(packet -> {
-                packet.getSpns().forEach(spn -> { // FIXME
+                packet.getSpns().forEach(spn -> {
                     // 6.1.26.10.c. Fail each PG query where any bin value received is greater than FAFFh. (Use
                     // FAFFFFFFh for NOx values)
                     validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.10.c");

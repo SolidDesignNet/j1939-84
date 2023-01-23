@@ -16,7 +16,6 @@ import java.util.List;
 import org.etools.j1939_84.model.OBDModuleInformation;
 import org.etools.j1939_84.model.Outcome;
 import org.etools.j1939_84.modules.VehicleInformationModule;
-import org.etools.j1939tools.bus.BusException;
 import org.etools.j1939tools.bus.Packet;
 import org.etools.j1939tools.j1939.packets.DM24SPNSupportPacket;
 import org.etools.j1939tools.j1939.packets.GenericPacket;

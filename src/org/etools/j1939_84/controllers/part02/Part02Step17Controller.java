@@ -370,20 +370,22 @@ public class Part02Step17Controller extends StepController {
         // a. DS request message to ECU that indicated support in DM24 for upon request
         // SP 12783 (Hybrid Lifetime Distance Traveled in Charge Depleting Operation with
         // Engine off) for PG 64244 Hybrid Charge Depleting or Increasing Operation Lifetime Hours
-        List<GenericPacket> ghgChgDepletingLifeTimePackets = requestPackets(module.getSourceAddress(),
-                                                                            GHG_TRACKING_LIFETIME_HYBRID_CHG_DEPLETING_PG)
-                                                                                                                          .stream()
-                                                                                                                          // 6.2.17.23.b.
-                                                                                                                          // Record
-                                                                                                                          // each
-                                                                                                                          // value
-                                                                                                                          // for
-                                                                                                                          // use
-                                                                                                                          // in
-                                                                                                                          // Part
-                                                                                                                          // 12.
-                                                                                                                          .peek(this::save)
-                                                                                                                          .collect(Collectors.toList());
+        int[] pgns = { GHG_TRACKING_LIFETIME_HYBRID_CHG_DEPLETING_PG };
+        var ghgChgDepletingLifeTimePackets = requestPackets(module.getSourceAddress(), pgns).stream()
+                                                                                            .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                            .collect(Collectors.toList())
+                                                                                            .stream()
+                                                                                            // 6.2.17.23.b.
+                                                                                            // Record
+                                                                                            // each
+                                                                                            // value
+                                                                                            // for
+                                                                                            // use
+                                                                                            // in
+                                                                                            // Part
+                                                                                            // 12.
+                                                                                            .peek(this::save)
+                                                                                            .collect(Collectors.toList());
 
         if (ghgChgDepletingLifeTimePackets.isEmpty()) {
             // 6.2.17.24.a. Fail PG query where no response was received
@@ -415,6 +417,7 @@ public class Part02Step17Controller extends StepController {
                       });
             });
         }
+        int[] pgns1 = { GHG_ACTIVE_HYBRID_CHG_DEPLETING_100_HR, GHG_STORED_HYBRID_CHG_DEPLETING_100_HR };
 
         // 6.2.17.25 Actions13 for MY2022+ Plug-in HEV DRIVES
         // 6.2.17.25.a - DS request message to ECU that indicated support in DM24 for upon request
@@ -424,14 +427,16 @@ public class Part02Step17Controller extends StepController {
         // PG PG Label
         // 64246 Hybrid Charge Depleting or Increasing Operation Active 100 Hours - PG Acronym HCDIOA
         // 64245 Hybrid Charge Depleting or Increasing Operation Stored 100 Hours - - PG Acronym HCDIOS
-        var hybridChargeOpsPackets = requestPackets(module.getSourceAddress(),
-                                                    GHG_ACTIVE_HYBRID_CHG_DEPLETING_100_HR,
-                                                    GHG_STORED_HYBRID_CHG_DEPLETING_100_HR)
-                                                                                           .stream()
-                                                                                           // 6.2.17.25.b. Record each
-                                                                                           // value for use in Part 12.
-                                                                                           .peek(this::save)
-                                                                                           .collect(Collectors.toList());
+        var hybridChargeOpsPackets = requestPackets(module.getSourceAddress(), pgns1).stream()
+                                                                                     .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                     .collect(Collectors.toList())
+                                                                                     .stream()
+                                                                                     // 6.2.17.25.b. Record
+                                                                                     // each
+                                                                                     // value for use in Part
+                                                                                     // 12.
+                                                                                     .peek(this::save)
+                                                                                     .collect(Collectors.toList());
 
         // 6.2.17.25.c - List data received in a table using lifetime, stored 100 hr, active 100hr for columns, and
         // categories for rows.
@@ -482,8 +487,10 @@ public class Part02Step17Controller extends StepController {
         // 62.17.19.a - DS request message to ECU that indicated support in DM24 for upon request
         // SP 12797 (Hybrid Lifetime Propulsion System Active Time) for 64241 PSA Times
         // Lifetime Hours
-        var ghgTrackingPackets = requestPackets(module.getSourceAddress(),
-                                                GHG_TRACKING_LIFETIME_HYBRID_PG)
+        int[] pgns = { GHG_TRACKING_LIFETIME_HYBRID_PG };
+        var ghgTrackingPackets = requestPackets(module.getSourceAddress(), pgns).stream()
+                                                                                .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                .collect(Collectors.toList())
                                                                                 .stream()
                                                                                 // 6.2.17.19.b.
                                                                                 // Record each value for
@@ -520,6 +527,7 @@ public class Part02Step17Controller extends StepController {
                       });
             });
         }
+        int[] pgns1 = { GHG_STORED_HYBRID_100_HR, GHG_ACTIVE_HYBRID_100_HR };
 
         // 6.2.17.21 Actions11 for MY2022+ HEV and BEV drives
         // 6.2.17.21.a - DS request message to ECU that indicated support in DM24 for upon request
@@ -530,16 +538,16 @@ public class Part02Step17Controller extends StepController {
         // 64243 PSA Times Active 100 Hours - PG Acronym PSATA
         // 6.2.17.21.c - List data received in a table using lifetime, stored 100 hr, active 100hr
         // for columns, and categories for rows.
-        List<GenericPacket> ghgPackets = requestPackets(module.getSourceAddress(),
-                                                        GHG_STORED_HYBRID_100_HR,
-                                                        GHG_ACTIVE_HYBRID_100_HR)
-                                                                                 .stream()
-                                                                                 // 6.2.17.21.b. -
-                                                                                 // Record each
-                                                                                 // value for use
-                                                                                 // in Part 12.
-                                                                                 .peek(this::save)
-                                                                                 .collect(Collectors.toList());
+        var ghgPackets = requestPackets(module.getSourceAddress(), pgns1).stream()
+                                                                         .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                         .collect(Collectors.toList())
+                                                                         .stream()
+                                                                         // 6.2.17.21.b. -
+                                                                         // Record each
+                                                                         // value for use
+                                                                         // in Part 12.
+                                                                         .peek(this::save)
+                                                                         .collect(Collectors.toList());
 
         if (!ghgTrackingPackets.isEmpty() || !ghgPackets.isEmpty()) {
             // 6.2.17.19.c - List data received in a table using lifetime, stored 100 hr, active 100hr for columns, and
@@ -595,13 +603,16 @@ public class Part02Step17Controller extends StepController {
         // 6.2.17.11 Actions6 for all MY2022+ Engines
         // 6.2.17.11.a - DS request messages to ECU that indicated support in DM24 for upon request SP 12730 (GHG
         // Tracking Lifetime Engine Run Time) for PG 64252 GHG Tracking Lifetime Array Data.
-        var ghgTrackingLifetimePackets = requestPackets(module.getSourceAddress(),
-                                                        GHG_TRACKING_LIFETIME_PG)
-                                                                                 .stream()
-                                                                                 // 6.2.17.9.b - Record each value
-                                                                                 // for use in Part 12.
-                                                                                 .peek(this::save)
-                                                                                 .collect(Collectors.toList());
+        int[] pgns = { GHG_TRACKING_LIFETIME_PG };
+        var ghgTrackingLifetimePackets = requestPackets(module.getSourceAddress(), pgns).stream()
+                                                                                        .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                        .collect(Collectors.toList())
+                                                                                        .stream()
+                                                                                        // 6.2.17.9.b - Record each
+                                                                                        // value
+                                                                                        // for use in Part 12.
+                                                                                        .peek(this::save)
+                                                                                        .collect(Collectors.toList());
 
         if (ghgTrackingLifetimePackets.isEmpty()) {
             // 6.2.17.12.a. Fail PG query where no response was received
@@ -630,6 +641,7 @@ public class Part02Step17Controller extends StepController {
                       });
             });
         }
+        int[] pgns1 = { GHG_ACTIVE_100_HR, GHG_STORED_100_HR };
 
         // 6.2.17.13 Actions7 for MY2022+ Engines
         // 6.2.17.13.a - DS request message to ECU that indicated support in DM24 for upon request
@@ -637,17 +649,17 @@ public class Part02Step17Controller extends StepController {
         // PG PG Label
         // 64254 GHG Tracking Active 100 Hour Array Data
         // 64253 GHG Tracking Stored 100 Hour Array Data
-        var ghgTrackingPackets = requestPackets(module.getSourceAddress(),
-                                                GHG_ACTIVE_100_HR,
-                                                GHG_STORED_100_HR)
-                                                                  .stream()
-                                                                  // 6.2.17.11.b.
-                                                                  // Record
-                                                                  // each value
-                                                                  // for use
-                                                                  // in Part 12.
-                                                                  .peek(this::save)
-                                                                  .collect(Collectors.toList());
+        var ghgTrackingPackets = requestPackets(module.getSourceAddress(), pgns1).stream()
+                                                                                 .map(p -> (GhgActiveTechnologyPacket) p)
+                                                                                 .collect(Collectors.toList())
+                                                                                 .stream()
+                                                                                 // 6.2.17.11.b.
+                                                                                 // Record
+                                                                                 // each value
+                                                                                 // for use
+                                                                                 // in Part 12.
+                                                                                 .peek(this::save)
+                                                                                 .collect(Collectors.toList());
 
         if (!ghgTrackingLifetimePackets.isEmpty() || !ghgTrackingPackets.isEmpty()) {
             // 6.2.17.13.c. List data received in a table using lifetime, stored 100 hr,
@@ -833,14 +845,12 @@ public class Part02Step17Controller extends StepController {
                                      .toArray();
         // 6.2.17.7.a. DS request messages to ECU that indicated support in DM24 for upon
         // request SPN 12675 (NOx Tracking Engine
-        var nOxPackets = requestPackets(module.getSourceAddress(),
-                                        nOxLifeTimeSps)
-                                                       .stream()
-                                                       // 6.2.17.7.b. Record
-                                                       // each value for use
-                                                       // in Part 12.
-                                                       .peek(this::save)
-                                                       .collect(Collectors.toList());
+        var nOxPackets = requestPackets(module.getSourceAddress(), nOxLifeTimeSps).stream()
+                                                                                  // 6.2.17.7.b. Record
+                                                                                  // each value for use
+                                                                                  // in Part 12.
+                                                                                  .peek(this::save)
+                                                                                  .collect(Collectors.toList());
 
         if (nOxPackets.isEmpty()) {
             // 6.2.17.8.a. Fail each PG query where no response was received.
@@ -880,22 +890,21 @@ public class Part02Step17Controller extends StepController {
         // request SPN 12675 (NOx Tracking Engine Activity Lifetime Fuel Consumption Bin 1
         // - Total) for each active 100hr NOx binning PG, followed by each Stored 100 hr PG
         // Label
-        List<GenericPacket> nOx100HourPackets = requestPackets(module.getSourceAddress(),
-                                                               CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_PGs,
-                                                                                    NOx_TRACKING_STORED_100_HOURS_PGs))
-                                                                                                                       .stream()
-                                                                                                                       // 6.2.17.9.b
-                                                                                                                       // -
-                                                                                                                       // Record
-                                                                                                                       // each
-                                                                                                                       // value
-                                                                                                                       // for
-                                                                                                                       // use
-                                                                                                                       // in
-                                                                                                                       // Part
-                                                                                                                       // 12.
-                                                                                                                       .peek(this::save)
-                                                                                                                       .collect(Collectors.toList());
+        var nOx100HourPackets = requestPackets(module.getSourceAddress(),
+                                               CollectionUtils.join(NOx_TRACKING_ACTIVE_100_HOURS_PGs,
+                                                                    NOx_TRACKING_STORED_100_HOURS_PGs)).stream()
+                                                                                                       // 6.2.17.9.b
+                                                                                                       // -
+                                                                                                       // Record
+                                                                                                       // each
+                                                                                                       // value
+                                                                                                       // for
+                                                                                                       // use
+                                                                                                       // in
+                                                                                                       // Part
+                                                                                                       // 12.
+                                                                                                       .peek(this::save)
+                                                                                                       .collect(Collectors.toList());
 
         // 6.2.17.9.c - List data received in a table using bin numbers for rows.
         if (nOx100HourPackets.isEmpty()) {
