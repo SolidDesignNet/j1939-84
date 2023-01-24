@@ -233,7 +233,7 @@ public class SectionA5NoxGhgVerifierTest {
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.INFO),
-                                        eq("Section A.5.A - Massage from part 2 for PG 64244 is missing" +
+                                        eq("Section A.5.A - Message from part 2 for PG 64244 is missing" +
                                                 " so verification of values skipped"));
 
         String expected = "";
@@ -1297,13 +1297,13 @@ public class SectionA5NoxGhgVerifierTest {
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.INFO),
-                                        eq("Section A.5.A - Massage from part 2 for PG 64260 is missing" +
+                                        eq("Section A.5.A - Message from part 2 for PG 64260 is missing" +
                                                 " so verification of values skipped"));
 
         String expected = "A.5.3 - Checking NOx spn values against previous spn values";
         assertEquals(expected, listener.getMessages());
 
-        String outcome = "INFO: Section A.5.A - Massage from part 2 for PG 64260 is missing so" +
+        String outcome = "INFO: Section A.5.A - Message from part 2 for PG 64260 is missing so" +
                 " verification of values skipped";
         assertEquals(outcome, listener.getOutcomes().get(0).toString());
 
@@ -1844,7 +1844,7 @@ public class SectionA5NoxGhgVerifierTest {
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.INFO),
-                                        eq("Section A.5.A - Massage from part 2 for PG 64252 is missing" +
+                                        eq("Section A.5.A - Message from part 2 for PG 64252 is missing" +
                                                 " so verification of values skipped"));
 
         String expected = "";
@@ -2131,7 +2131,7 @@ public class SectionA5NoxGhgVerifierTest {
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.INFO),
-                                        eq("Section A.5.A - Massage from part 2 for PG 64257 is missing" +
+                                        eq("Section A.5.A - Message from part 2 for PG 64257 is missing" +
                                                 " so verification of values skipped"));
 
         String expected = "";
@@ -2415,7 +2415,7 @@ public class SectionA5NoxGhgVerifierTest {
         verify(mockListener).addOutcome(eq(instance.getPartNumber()),
                                         eq(instance.getStepNumber()),
                                         eq(Outcome.INFO),
-                                        eq("Section A.5.A - Massage from part 2 for PG 64241 is missing so" +
+                                        eq("Section A.5.A - Message from part 2 for PG 64241 is missing so" +
                                                 " verification of values skipped"));
 
         String expected = "";

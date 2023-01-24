@@ -208,7 +208,7 @@ public class SectionA5NoxGhgVerifier extends SectionVerifier {
                     listener.addOutcome(partNumber,
                                         stepNumber,
                                         Outcome.INFO,
-                                        "Section A.5.A - Massage from part 2 for PG "
+                                        "Section A.5.A - Message from part 2 for PG "
                                                 + packet.getPgnDefinition().getId()
                                                 + " is missing so verification of values skipped");
                 }
