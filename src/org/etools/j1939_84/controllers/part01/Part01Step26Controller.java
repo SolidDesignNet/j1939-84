@@ -695,10 +695,11 @@ public class Part01Step26Controller extends StepController {
                         + module.getModuleName());
             }
         } else {
+            var indexes = List.of(12691, 12694, 12697);
             ghg100HrPackets.forEach(packet -> {
                 packet.getSpns().forEach(spn -> {
                     if (spn.hasValue()) {
-                        if (spn.getId() != 12691 && spn.getId() != 12694 && spn.getId() != 12697) {
+                        if (!indexes.contains(spn.getId())) {
                             // 6.1.26.18.c. Fail PG query where any bin value received is greater than FAFFh.
                             validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.18.c");
                         } else {
@@ -706,7 +707,9 @@ public class Part01Step26Controller extends StepController {
                             validateSpnValueGreaterThanFaBasedSlotLength(module, spn, FAIL, "6.1.26.18.d");
                         }
                     }
-                    if (GHG_ACTIVE_GREEN_HOUSE_100_HR == packet.getPgnDefinition().getId() && spn.getValue() > 0) {
+                    if (!indexes.contains(spn.getId())
+                            && GHG_ACTIVE_GREEN_HOUSE_100_HR == packet.getPgnDefinition().getId()
+                            && spn.getValue() > 0) {
                         // 6.1.26.18.g. Fail each active 100 hr array value that is greater than zero
                         addFailure("6.1.26.18.g - Active 100 hr array value received was greater than zero from "
                                 + module.getModuleName() + " for " + spn);
