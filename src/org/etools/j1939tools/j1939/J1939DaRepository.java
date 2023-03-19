@@ -165,9 +165,13 @@ public class J1939DaRepository {
                                                                   PgnDefinition pgnDef = null;
                                                                   // we don't care about the PGN that have no
                                                                   // SPNs.
-                                                                  if ( !isBlankOrNA(pgnIdStr)) {
-                                                                      if(spnDef == null){
-                                                                          spnDef = new SpnDefinition(-1, "Unknown", 0, 0, -1);
+                                                                  if (!isBlankOrNA(pgnIdStr)) {
+                                                                      if (spnDef == null) {
+                                                                          spnDef = new SpnDefinition(-1,
+                                                                                                     "Unknown",
+                                                                                                     0,
+                                                                                                     0,
+                                                                                                     -1);
                                                                       }
                                                                       int transmissionRate = parseTransmissionRate(line[3]);
                                                                       String label = shortenLabel(line[1]).trim();
@@ -198,7 +202,11 @@ public class J1939DaRepository {
                                                 .reversed()
                                                 // then prefer the one with custom slot definition
                                                 .thenComparing(SpnDefinition::getSlotNumber))
-                              .collect(Collectors.toMap(SpnDefinition::getSpnId, s -> s, (a, b) -> a));
+                              .collect(Collectors.toMap(SpnDefinition::getSpnId, s -> s, (a, b) -> {
+                                  System.err.println("Duplicate SPNs: " + a.getSpnId() + ": " + a.getLabel() + ", "
+                                          + b.getLabel());
+                                  return a;
+                              }));
 
                 pgnLut = table.stream()
                               .flatMap(row -> row[0] == null ? Stream.empty() : Stream.of((PgnDefinition) row[0]))
