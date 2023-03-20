@@ -15,6 +15,7 @@ public class DM5Heartbeat {
         AtomicBoolean running = new AtomicBoolean(true);
         new Thread(() -> {
             try {
+                Thread.sleep(10_000);
                 while (running.get()) {
                     j1939.requestGlobal("DM5 Heartbeat", DM5DiagnosticReadinessPacket.class, listener);
                     Thread.sleep(10_000);
