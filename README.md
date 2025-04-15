@@ -1,3 +1,5 @@
+# DEPRECATED
+
 # j1939-84
 
 This tool is an implementation of the SAE J1939-84 specifications for etools.org
